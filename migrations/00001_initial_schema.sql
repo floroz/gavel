@@ -6,7 +6,8 @@ CREATE TABLE items (
     start_price BIGINT NOT NULL,
     current_highest_bid BIGINT DEFAULT 0,
     end_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 CREATE TABLE bids (
