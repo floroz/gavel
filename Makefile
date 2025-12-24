@@ -33,6 +33,10 @@ migrate-create: ## Create a new migration file (usage: make migrate-create NAME=
 run: ## Run the API server
 	go run cmd/api/main.go
 
+.PHONY: run-worker
+run-worker: ## Run the worker
+	go run cmd/worker/main.go
+
 .PHONY: test
 test: ## Run tests
 	go test -v ./...
