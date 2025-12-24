@@ -11,6 +11,28 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// Validation errors
+var (
+	ErrBidTooLow    = fmt.Errorf("bid amount must be higher than current highest bid")
+	ErrAuctionEnded = fmt.Errorf("auction has ended")
+)
+
+// validateBidAmount checks if the bid amount is higher than the current highest bid
+func validateBidAmount(bidAmount, currentHighest int64) error {
+	if bidAmount <= currentHighest {
+		return ErrBidTooLow
+	}
+	return nil
+}
+
+// validateAuctionNotEnded checks if the auction has not ended
+func validateAuctionNotEnded(endAt time.Time) error {
+	if time.Now().After(endAt) {
+		return ErrAuctionEnded
+	}
+	return nil
+}
+
 // AuctionService implements the core business logic
 type AuctionService struct {
 	txManager  TransactionManager
@@ -51,14 +73,12 @@ func (s *AuctionService) PlaceBid(ctx context.Context, cmd PlaceBidCommand) (*Bi
 		return nil, fmt.Errorf("item not found: %w", err)
 	}
 
-	// Business rule: bid must be higher than current highest bid
-	if cmd.Amount <= item.CurrentHighestBid {
-		return nil, fmt.Errorf("bid amount %d must be higher than current highest bid %d", cmd.Amount, item.CurrentHighestBid)
+	if err := validateBidAmount(cmd.Amount, item.CurrentHighestBid); err != nil {
+		return nil, err
 	}
 
-	// Business rule: auction must not have ended
-	if time.Now().After(item.EndAt) {
-		return nil, fmt.Errorf("auction has ended")
+	if err := validateAuctionNotEnded(item.EndAt); err != nil {
+		return nil, err
 	}
 
 	// Create the bid
