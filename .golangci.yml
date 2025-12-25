@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=https://json.schemastore.org/golangci-lint.json
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - typecheck
+    - revive
+    - gosec
+    - gofmt
+    - goimports
+    - misspell
+    - unconvert
+    - unparam
+    - nakedret
+    - goconst
+    - gocyclo
+
+linters-settings:
+  govet:
+    enable:
+      - shadow
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: github.com/floroz/auction-system
+  gocyclo:
+    min-complexity: 15
+  revive:
+    rules:
+      - name: exported
+        severity: warning
+        disabled: false
+      - name: package-comments
+        severity: warning
+        disabled: false
+

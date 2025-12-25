@@ -29,13 +29,26 @@ migrate-status: ## Check migration status
 migrate-create: ## Create a new migration file (usage: make migrate-create NAME=add_users_table)
 	goose -dir migrations create $(NAME) sql
 
-.PHONY: run
-run: ## Run the API server
-	go run cmd/api/main.go
+.PHONY: run-bid-service
+run-bid-service: ## Run the Bid Service (Producer)
+	go run cmd/bid-service/main.go
 
-.PHONY: run-worker
-run-worker: ## Run the worker
-	go run cmd/worker/main.go
+.PHONY: run-bid-worker
+run-bid-worker: ## Run the Bid Worker (Outbox Relay)
+	go run cmd/bid-worker/main.go
+
+.PHONY: run-stats-service
+run-stats-service: ## Run the User Stats Service (Consumer)
+	go run cmd/user-stats-service/main.go
+
+.PHONY: run-all
+run-all: ## Run all services concurrently
+	@echo "Starting all services... Press Ctrl+C to stop."
+	@trap 'kill 0' INT; \
+	go run cmd/bid-service/main.go 2>&1 | sed "s/^/[BID-API] /" & \
+	go run cmd/bid-worker/main.go 2>&1 | sed "s/^/[WORKER]  /" & \
+	go run cmd/user-stats-service/main.go 2>&1 | sed "s/^/[STATS]   /" & \
+	wait
 
 .PHONY: test
 test: ## Run tests
@@ -92,7 +105,7 @@ proto-gen: install-protoc ## Generate Go code from protobuf files
 	@if [ ! -f tools/protoc ]; then \
 		echo "Error: protoc not found. Run 'make install-protoc' first."; \
 		exit 1; \
-	fi
+		fi
 	@if ! command -v protoc-gen-go >/dev/null 2>&1; then \
 		echo "Error: protoc-gen-go not found in PATH."; \
 		echo "Please install it with: go install google.golang.org/protobuf/cmd/protoc-gen-go@latest"; \
@@ -108,3 +121,19 @@ proto-gen: install-protoc ## Generate Go code from protobuf files
 		api/proto/events.proto
 	@echo "Protobuf code generated in internal/pb/"
 
+.PHONY: lint
+lint: ## Run linter
+	@if ! command -v golangci-lint >/dev/null 2>&1; then \
+		echo "Installing golangci-lint..."; \
+		go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest; \
+	fi
+	golangci-lint run
+
+.PHONY: fmt
+fmt: ## Format code
+	go fmt ./...
+	@if ! command -v goimports >/dev/null 2>&1; then \
+		echo "Installing goimports..."; \
+		go install golang.org/x/tools/cmd/goimports@latest; \
+	fi
+	goimports -w -local github.com/floroz/auction-system .
