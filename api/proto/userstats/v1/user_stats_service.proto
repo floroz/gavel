@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package userstats.v1;
+
+option go_package = "github.com/floroz/gavel/pkg/proto/userstats/v1;userstatsv1";
+
+service UserStatsService {
+  rpc GetUserStats(GetUserStatsRequest) returns (UserStatsResponse);
+}
+
+message GetUserStatsRequest {
+  string user_id = 1;
+}
+
+message UserStatsResponse {
+  UserStats stats = 1;
+}
+
+message UserStats {
+  string user_id = 1;
+  int64 total_bids = 2;
+  int64 total_amount = 3; // Total value of bids placed
+  string last_updated_at = 4; // ISO 8601 string
+}
+
