@@ -2,18 +2,21 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/redis/go-redis/v9"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 
 	pkgdb "github.com/floroz/gavel/pkg/database"
+	"github.com/floroz/gavel/pkg/proto/bids/v1/bidsv1connect"
+	"github.com/floroz/gavel/services/bid-service/internal/adapters/api"
 	"github.com/floroz/gavel/services/bid-service/internal/adapters/database"
 	"github.com/floroz/gavel/services/bid-service/internal/domain/bids"
 )
@@ -56,36 +59,30 @@ func main() {
 	}
 	logger.Info("Postgres Connected")
 
-	// 2. Check RabbitMQ
+	// 2. Check RabbitMQ (Optional for API, but good for health)
 	rabbitURL := os.Getenv("RABBITMQ_URL")
-	if rabbitURL == "" {
-		logger.Error("RABBITMQ_URL is not set")
-		os.Exit(1)
+	if rabbitURL != "" {
+		mq, err := amqp091.Dial(rabbitURL)
+		if err != nil {
+			logger.Warn("RabbitMQ connection failed (API might still work)", "error", err)
+		} else {
+			defer mq.Close()
+			logger.Info("RabbitMQ Connected")
+		}
 	}
 
-	mq, err := amqp091.Dial(rabbitURL)
-	if err != nil {
-		logger.Error("RabbitMQ failed", "error", err)
-		os.Exit(1)
-	}
-	defer mq.Close()
-	logger.Info("RabbitMQ Connected")
-
-	// 3. Check Redis
+	// 3. Check Redis (Optional for API, but good for health)
 	redisURL := os.Getenv("REDIS_URL")
-	if redisURL == "" {
-		logger.Error("REDIS_URL is not set")
-		os.Exit(1)
+	if redisURL != "" {
+		rdb := redis.NewClient(&redis.Options{Addr: redisURL})
+		if err := rdb.Ping(ctx).Err(); err != nil {
+			logger.Warn("Redis connection failed (API might still work)", "error", err)
+		} else {
+			logger.Info("Redis Connected")
+		}
 	}
-	rdb := redis.NewClient(&redis.Options{Addr: redisURL})
-	if err := rdb.Ping(ctx).Err(); err != nil {
-		logger.Error("Redis failed", "error", err)
-		os.Exit(1)
-	}
-	logger.Info("Redis Connected")
 
 	// 4. Initialize Repositories (Infrastructure Layer)
-	// Set lock timeout to 3 seconds to prevent indefinite waiting
 	txManager := pkgdb.NewPostgresTransactionManager(pool, 3*time.Second)
 	bidRepo := database.NewPostgresBidRepository(pool)
 	itemRepo := database.NewPostgresItemRepository(pool)
@@ -94,62 +91,25 @@ func main() {
 	// 5. Initialize Service (Domain Layer)
 	auctionService := bids.NewAuctionService(txManager, bidRepo, itemRepo, outboxRepo)
 
-	logger.Info("Services Initialized")
+	// 6. Initialize API Handler (ConnectRPC)
+	bidHandler := api.NewBidServiceHandler(auctionService)
+	path, handler := bidsv1connect.NewBidServiceHandler(bidHandler)
 
-	// 6. Demo: Create a test item and place a bid
-	if err := demoPlaceBid(ctx, pool, auctionService, logger); err != nil {
-		logger.Error("Demo failed", "error", err)
+	mux := http.NewServeMux()
+	mux.Handle(path, handler)
+
+	// 7. Start Server
+	addr := ":8080"
+	logger.Info("Starting Bid Service API", "addr", addr)
+
+	// Use h2c for HTTP/2 without TLS (common for internal services / local dev)
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: h2c.NewHandler(mux, &http2.Server{}),
 	}
 
-	logger.Info("Milestone 2: Transactional Outbox Pattern implemented.")
-	logger.Info("Next: Implement the Outbox Relay worker to publish events to RabbitMQ.")
-}
-
-// demoPlaceBid demonstrates the PlaceBid functionality
-func demoPlaceBid(ctx context.Context, pool *pgxpool.Pool, service *bids.AuctionService, logger *slog.Logger) error {
-	// Create a test item
-	itemID := uuid.New()
-	query := `
-		INSERT INTO items (id, title, description, start_price, current_highest_bid, end_at, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-	`
-	_, err := pool.Exec(ctx, query,
-		itemID,
-		"Vintage Watch",
-		"A beautiful vintage watch from the 1960s",
-		int64(10000), // $100.00
-		int64(0),
-		time.Now().Add(24*time.Hour),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create test item: %w", err)
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		logger.Error("Server failed", "error", err)
+		os.Exit(1)
 	}
-
-	logger.Info("Created test item", "item_id", itemID)
-
-	// Place a bid
-	userID := uuid.New()
-	cmd := bids.PlaceBidCommand{
-		ItemID: itemID,
-		UserID: userID,
-		Amount: int64(15000), // $150.00
-	}
-
-	bid, err := service.PlaceBid(ctx, cmd)
-	if err != nil {
-		return fmt.Errorf("failed to place bid: %w", err)
-	}
-
-	logger.Info("Bid placed successfully", "bid_id", bid.ID, "amount", bid.Amount)
-
-	// Verify the outbox event was created
-	var count int
-	err = pool.QueryRow(ctx, "SELECT COUNT(*) FROM outbox_events WHERE event_type = $1", bids.EventTypeBidPlaced).Scan(&count)
-	if err != nil {
-		return fmt.Errorf("failed to count outbox events: %w", err)
-	}
-
-	logger.Info("Outbox events created", "count", count)
-
-	return nil
 }
