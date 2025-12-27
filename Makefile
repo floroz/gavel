@@ -55,6 +55,10 @@ run-bid-worker: ## Run the Bid Worker (Outbox Relay)
 run-stats-service: ## Run the User Stats Service (Consumer)
 	go run services/user-stats-service/cmd/worker/main.go
 
+.PHONY: run-stats-api
+run-stats-api: ## Run the User Stats Service API (Read Side)
+	go run services/user-stats-service/cmd/api/main.go
+
 .PHONY: run-all
 run-all: ## Run all services concurrently
 	@echo "Starting all services... Press Ctrl+C to stop."
@@ -124,13 +128,14 @@ install-protoc-plugins: ## Install Go protobuf plugins
 	else \
 		echo "protoc-gen-go already installed"; \
 	fi
-	@if ! command -v protoc-gen-go-grpc >/dev/null 2>&1; then \
-		echo "Installing protoc-gen-go-grpc..."; \
-		go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest || \
-		(echo "Note: protoc-gen-go-grpc not installed (optional for gRPC)"; \
-		 echo "  Install with: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest"); \
+	@if ! command -v protoc-gen-connect-go >/dev/null 2>&1; then \
+		echo "Installing protoc-gen-connect-go..."; \
+		go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest || \
+		(echo "Error: Failed to install protoc-gen-connect-go."; \
+		 echo "  go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest"; \
+		 exit 1); \
 	else \
-		echo "protoc-gen-go-grpc already installed"; \
+		echo "protoc-gen-connect-go already installed"; \
 	fi
 
 .PHONY: proto-gen
@@ -145,14 +150,40 @@ proto-gen: install-protoc ## Generate Go code from protobuf files
 		echo "Make sure $$HOME/go/bin (or $$GOPATH/bin) is in your PATH."; \
 		exit 1; \
 	fi
+	@if ! command -v protoc-gen-connect-go >/dev/null 2>&1; then \
+		echo "Error: protoc-gen-connect-go not found in PATH."; \
+		echo "Please install it with: go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest"; \
+		exit 1; \
+	fi
 	@mkdir -p pkg/proto
 	tools/protoc \
 		--go_out=. \
 		--go_opt=module=github.com/floroz/gavel \
+		--connect-go_out=. \
+		--connect-go_opt=module=github.com/floroz/gavel \
 		--proto_path=api/proto \
 		--proto_path=tools/include \
-		api/proto/events.proto
+		api/proto/events.proto \
+		api/proto/bids/v1/bid_service.proto \
+		api/proto/userstats/v1/user_stats_service.proto
 	@echo "Protobuf code generated in pkg/proto/"
+
+.PHONY: proto-gen-ts
+proto-gen-ts: install-protoc ## Generate TypeScript code for frontend
+	@mkdir -p frontend/proto
+	@cd frontend && npm install
+	tools/protoc \
+		--plugin=protoc-gen-es=./frontend/node_modules/.bin/protoc-gen-es \
+		--plugin=protoc-gen-connect-es=./frontend/node_modules/.bin/protoc-gen-connect-es \
+		--es_out=frontend/proto \
+		--es_opt=target=ts \
+		--connect-es_out=frontend/proto \
+		--connect-es_opt=target=ts \
+		--proto_path=api/proto \
+		--proto_path=tools/include \
+		api/proto/bids/v1/bid_service.proto \
+		api/proto/userstats/v1/user_stats_service.proto
+	@echo "TypeScript code generated in frontend/proto/"
 
 .PHONY: lint
 lint: ## Run linter
