@@ -38,8 +38,8 @@ func (c *BidConsumer) Run(ctx context.Context) error {
 	defer ch.Close()
 
 	// Setup Exchange & Queue
-	if err := c.setupRabbitMQ(ch); err != nil {
-		return fmt.Errorf("failed to setup rabbitmq: %w", err)
+	if setupErr := c.setupRabbitMQ(ch); setupErr != nil {
+		return fmt.Errorf("failed to setup rabbitmq: %w", setupErr)
 	}
 
 	msgs, err := ch.Consume(

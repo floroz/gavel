@@ -9,8 +9,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/floroz/auction-system/pkg/proto"
 	"github.com/floroz/auction-system/pkg/database"
+	pb "github.com/floroz/auction-system/pkg/proto"
 )
 
 // Validation errors

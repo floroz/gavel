@@ -8,8 +8,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/floroz/auction-system/services/bid-service/internal/domain/items"
 	pkgdb "github.com/floroz/auction-system/pkg/database"
+	"github.com/floroz/auction-system/services/bid-service/internal/domain/items"
 )
 
 // PostgresItemRepository implements bids.ItemRepository using pgx

@@ -3,6 +3,7 @@ package testhelpers
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"path/filepath"
 	"testing"
 	"time"
@@ -51,19 +52,19 @@ func NewTestDatabase(t *testing.T, migrationsPath string) *TestDatabase {
 		t.Fatalf("failed to connect to database: %s", err)
 	}
 
-	if err := pool.Ping(ctx); err != nil {
-		t.Fatalf("failed to ping database: %s", err)
+	if pingErr := pool.Ping(ctx); pingErr != nil {
+		t.Fatalf("failed to ping database: %s", pingErr)
 	}
 
 	// Run migrations using standard sql driver
-	db, err := sql.Open("pgx", connStr)
-	if err != nil {
-		t.Fatalf("failed to open sql db for migrations: %s", err)
+	db, openErr := sql.Open("pgx", connStr)
+	if openErr != nil {
+		t.Fatalf("failed to open sql db for migrations: %s", openErr)
 	}
 	defer db.Close()
 
-	if err := goose.SetDialect("postgres"); err != nil {
-		t.Fatalf("failed to set goose dialect: %s", err)
+	if dialectErr := goose.SetDialect("postgres"); dialectErr != nil {
+		t.Fatalf("failed to set goose dialect: %s", dialectErr)
 	}
 
 	absPath, err := filepath.Abs(migrationsPath)
@@ -85,8 +86,8 @@ func NewTestDatabase(t *testing.T, migrationsPath string) *TestDatabase {
 func (td *TestDatabase) Close() {
 	ctx := context.Background()
 	td.Pool.Close()
-	if err := td.Container.Terminate(ctx); err != nil {
+	if termErr := td.Container.Terminate(ctx); termErr != nil {
 		// Just log error, don't fail test cleanup explicitly if container fails to stop
-		// fmt.Printf("failed to terminate container: %v\n", err)
+		fmt.Printf("failed to terminate container: %v\n", termErr)
 	}
 }

@@ -116,8 +116,8 @@ func TestBidConsumerIntegration(t *testing.T) {
 	require.Eventually(t, func() bool {
 		var totalAmount int64
 		var totalBids int
-		err := dbPool.QueryRow(ctx, "SELECT total_amount_bid, total_bids_placed FROM user_stats WHERE user_id = $1", userID).Scan(&totalAmount, &totalBids)
-		if err != nil {
+		scanErr := dbPool.QueryRow(ctx, "SELECT total_amount_bid, total_bids_placed FROM user_stats WHERE user_id = $1", userID).Scan(&totalAmount, &totalBids)
+		if scanErr != nil {
 			return false
 		}
 		return totalAmount == amount && totalBids == 1

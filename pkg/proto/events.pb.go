@@ -7,13 +7,12 @@
 package pb
 
 import (
-	reflect "reflect"
-	sync "sync"
-	unsafe "unsafe"
-
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	reflect "reflect"
+	sync "sync"
+	unsafe "unsafe"
 )
 
 const (
@@ -110,7 +109,7 @@ const file_events_proto_rawDesc = "" +
 	"\aitem_id\x18\x02 \x01(\tR\x06itemId\x12\x17\n" +
 	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\x16\n" +
 	"\x06amount\x18\x04 \x01(\x03R\x06amount\x128\n" +
-	"\ttimestamp\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestampB.Z,github.com/floroz/auction-system/internal/pbb\x06proto3"
+	"\ttimestamp\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestampB/Z-github.com/floroz/auction-system/pkg/proto;pbb\x06proto3"
 
 var (
 	file_events_proto_rawDescOnce sync.Once
