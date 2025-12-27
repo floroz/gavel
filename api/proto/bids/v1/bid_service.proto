@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package bids.v1;
+
+option go_package = "github.com/floroz/gavel/pkg/proto/bids/v1;bidsv1";
+
+service BidService {
+  rpc PlaceBid(PlaceBidRequest) returns (PlaceBidResponse);
+}
+
+message PlaceBidRequest {
+  string item_id = 1;
+  string user_id = 2;
+  int64 amount = 3;
+}
+
+message PlaceBidResponse {
+  Bid bid = 1;
+}
+
+message Bid {
+  string id = 1;
+  string item_id = 2;
+  string user_id = 3;
+  int64 amount = 4;
+  string created_at = 5; // ISO 8601 string
+}
+
