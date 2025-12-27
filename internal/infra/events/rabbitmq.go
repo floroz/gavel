@@ -14,15 +14,9 @@ type RabbitMQPublisher struct {
 }
 
 // NewRabbitMQPublisher creates a new RabbitMQ publisher
-func NewRabbitMQPublisher(url string) (*RabbitMQPublisher, error) {
-	conn, err := amqp.Dial(url)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to rabbitmq: %w", err)
-	}
-
+func NewRabbitMQPublisher(conn *amqp.Connection) (*RabbitMQPublisher, error) {
 	ch, err := conn.Channel()
 	if err != nil {
-		conn.Close()
 		return nil, fmt.Errorf("failed to open channel: %w", err)
 	}
 
@@ -38,7 +32,6 @@ func NewRabbitMQPublisher(url string) (*RabbitMQPublisher, error) {
 	)
 	if err != nil {
 		ch.Close()
-		conn.Close()
 		return nil, fmt.Errorf("failed to declare exchange: %w", err)
 	}
 
@@ -48,12 +41,9 @@ func NewRabbitMQPublisher(url string) (*RabbitMQPublisher, error) {
 	}, nil
 }
 
-// Close closes the connection and channel
+// Close closes the channel
 func (p *RabbitMQPublisher) Close() error {
-	if err := p.channel.Close(); err != nil {
-		return err
-	}
-	return p.conn.Close()
+	return p.channel.Close()
 }
 
 // Publish publishes a message to the broker

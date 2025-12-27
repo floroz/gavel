@@ -84,9 +84,9 @@ func (r *OutboxRelay) processBatch(ctx context.Context) error {
 
 	for _, event := range events {
 		// Publish to RabbitMQ
-		// Exchange: bids.events
+		// Exchange: auction.events
 		// Routing Key: event_type (e.g., "bid.placed")
-		err := r.publisher.Publish(ctx, "bids.events", string(event.EventType), event.Payload)
+		err := r.publisher.Publish(ctx, "auction.events", string(event.EventType), event.Payload)
 		if err != nil {
 			// If publishing fails, we return error and the transaction rolls back.
 			// The event remains 'pending' and will be retried.

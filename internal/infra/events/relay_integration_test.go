@@ -49,7 +49,11 @@ func TestRelayIntegrationWithRabbitMQ(t *testing.T) {
 	dbPool := testDB.Pool
 
 	// 3. Setup Relay Components
-	rabbitPublisher, err := events.NewRabbitMQPublisher(amqpURL)
+	pubConn, err := amqp091.Dial(amqpURL)
+	require.NoError(t, err)
+	defer pubConn.Close()
+
+	rabbitPublisher, err := events.NewRabbitMQPublisher(pubConn)
 	require.NoError(t, err)
 	defer rabbitPublisher.Close()
 
@@ -76,13 +80,13 @@ func TestRelayIntegrationWithRabbitMQ(t *testing.T) {
 	defer ch.Close()
 
 	// Ensure queue matches what the publisher expects (or bind a queue to the exchange)
-	err = ch.ExchangeDeclare("bids.events", "topic", true, false, false, false, nil)
+	err = ch.ExchangeDeclare("auction.events", "topic", true, false, false, false, nil)
 	require.NoError(t, err)
 
 	q, err := ch.QueueDeclare("", false, false, true, false, nil)
 	require.NoError(t, err)
 
-	err = ch.QueueBind(q.Name, "bid.placed", "bids.events", false, nil)
+	err = ch.QueueBind(q.Name, "bid.placed", "auction.events", false, nil)
 	require.NoError(t, err)
 
 	msgs, err := ch.Consume(q.Name, "", true, false, false, false, nil)
