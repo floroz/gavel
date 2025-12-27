@@ -15,9 +15,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/rabbitmq"
 
-	"github.com/floroz/auction-system/pkg/testhelpers"
-	"github.com/floroz/auction-system/services/bid-service/internal/adapters/events"
-	"github.com/floroz/auction-system/services/bid-service/internal/domain/bids"
+	"github.com/floroz/gavel/pkg/testhelpers"
+	"github.com/floroz/gavel/services/bid-service/internal/adapters/events"
+	"github.com/floroz/gavel/services/bid-service/internal/domain/bids"
 )
 
 func TestBidEventsProducerIntegration(t *testing.T) {

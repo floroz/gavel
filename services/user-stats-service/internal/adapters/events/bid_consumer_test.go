@@ -13,16 +13,17 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/rabbitmq"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/floroz/auction-system/pkg/database"
-	pb "github.com/floroz/auction-system/pkg/proto"
-	"github.com/floroz/auction-system/pkg/testhelpers"
-	infradb "github.com/floroz/auction-system/services/user-stats-service/internal/adapters/database"
-	"github.com/floroz/auction-system/services/user-stats-service/internal/adapters/events"
-	"github.com/floroz/auction-system/services/user-stats-service/internal/domain/userstats"
+	"github.com/floroz/gavel/pkg/database"
+	pb "github.com/floroz/gavel/pkg/proto"
+	"github.com/floroz/gavel/pkg/testhelpers"
+	infradb "github.com/floroz/gavel/services/user-stats-service/internal/adapters/database"
+	"github.com/floroz/gavel/services/user-stats-service/internal/adapters/events"
+	"github.com/floroz/gavel/services/user-stats-service/internal/domain/userstats"
 )
 
 func TestBidConsumerIntegration(t *testing.T) {
@@ -37,6 +38,7 @@ func TestBidConsumerIntegration(t *testing.T) {
 	rabbitmqContainer, err := rabbitmq.Run(ctx,
 		"rabbitmq:3.12-management-alpine",
 		rabbitmq.WithAdminPassword("password"),
+		testcontainers.WithLogger(testcontainers.TestLogger(t)),
 	)
 	require.NoError(t, err)
 	defer func() {

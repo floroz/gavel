@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/floroz/auction-system/services/bid-service/internal/domain/items"
+	"github.com/floroz/gavel/services/bid-service/internal/domain/items"
 )
 
 // BidRepository defines the interface for bid persistence

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/floroz/auction-system/pkg/database"
+	"github.com/floroz/gavel/pkg/database"
 )
 
 type Service struct {

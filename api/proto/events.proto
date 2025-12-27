@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package events;
 
-option go_package = "github.com/floroz/auction-system/pkg/proto;pb";
+option go_package = "github.com/floroz/gavel/pkg/proto;pb";
 
 import "google/protobuf/timestamp.proto";
 

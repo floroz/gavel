@@ -1,4 +1,4 @@
-module github.com/floroz/auction-system
+module github.com/floroz/gavel
 
 go 1.24.2
 

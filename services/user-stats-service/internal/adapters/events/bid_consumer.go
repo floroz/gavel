@@ -9,8 +9,8 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/protobuf/proto"
 
-	pb "github.com/floroz/auction-system/pkg/proto"
-	"github.com/floroz/auction-system/services/user-stats-service/internal/domain/userstats"
+	pb "github.com/floroz/gavel/pkg/proto"
+	"github.com/floroz/gavel/services/user-stats-service/internal/domain/userstats"
 )
 
 // BidConsumer consumes bid events and updates user statistics

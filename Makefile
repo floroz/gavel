@@ -148,7 +148,7 @@ proto-gen: install-protoc ## Generate Go code from protobuf files
 	@mkdir -p pkg/proto
 	tools/protoc \
 		--go_out=. \
-		--go_opt=module=github.com/floroz/auction-system \
+		--go_opt=module=github.com/floroz/gavel \
 		--proto_path=api/proto \
 		--proto_path=tools/include \
 		api/proto/events.proto
@@ -169,4 +169,4 @@ fmt: ## Format code
 		echo "Installing goimports..."; \
 		go install golang.org/x/tools/cmd/goimports@latest; \
 	fi
-	goimports -w -local github.com/floroz/auction-system .
+	goimports -w -local github.com/floroz/gavel .

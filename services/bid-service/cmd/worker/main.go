@@ -11,7 +11,7 @@ import (
 	"github.com/joho/godotenv"
 	amqp "github.com/rabbitmq/amqp091-go"
 
-	"github.com/floroz/auction-system/services/bid-service/internal/adapters/events"
+	"github.com/floroz/gavel/services/bid-service/internal/adapters/events"
 )
 
 func main() {

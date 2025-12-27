@@ -9,9 +9,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	amqp "github.com/rabbitmq/amqp091-go"
 
-	pkgdb "github.com/floroz/auction-system/pkg/database"
-	pkgevents "github.com/floroz/auction-system/pkg/events"
-	"github.com/floroz/auction-system/services/bid-service/internal/adapters/database"
+	pkgdb "github.com/floroz/gavel/pkg/database"
+	pkgevents "github.com/floroz/gavel/pkg/events"
+	"github.com/floroz/gavel/services/bid-service/internal/adapters/database"
 )
 
 // BidEventsProducer orchestrates the process of relaying bid events from the outbox to RabbitMQ

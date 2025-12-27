@@ -15,12 +15,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go/modules/rabbitmq"
 
-	pkgdb "github.com/floroz/auction-system/pkg/database"
-	pkgevents "github.com/floroz/auction-system/pkg/events"
-	"github.com/floroz/auction-system/pkg/testhelpers"
-	"github.com/floroz/auction-system/services/bid-service/internal/adapters/database"
-	"github.com/floroz/auction-system/services/bid-service/internal/adapters/events"
-	"github.com/floroz/auction-system/services/bid-service/internal/domain/bids"
+	pkgdb "github.com/floroz/gavel/pkg/database"
+	pkgevents "github.com/floroz/gavel/pkg/events"
+	"github.com/floroz/gavel/pkg/testhelpers"
+	"github.com/floroz/gavel/services/bid-service/internal/adapters/database"
+	"github.com/floroz/gavel/services/bid-service/internal/adapters/events"
+	"github.com/floroz/gavel/services/bid-service/internal/domain/bids"
 )
 
 // TestRelayIntegrationWithRabbitMQ runs a full integration test with a real RabbitMQ container

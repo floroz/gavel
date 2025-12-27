@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/floroz/auction-system/services/user-stats-service/internal/domain/userstats"
+	"github.com/floroz/gavel/services/user-stats-service/internal/domain/userstats"
 )
 
 type UserStatsRepository struct {

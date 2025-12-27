@@ -12,10 +12,10 @@ import (
 	"github.com/joho/godotenv"
 	amqp "github.com/rabbitmq/amqp091-go"
 
-	pkgdb "github.com/floroz/auction-system/pkg/database"
-	"github.com/floroz/auction-system/services/user-stats-service/internal/adapters/database"
-	"github.com/floroz/auction-system/services/user-stats-service/internal/adapters/events"
-	"github.com/floroz/auction-system/services/user-stats-service/internal/domain/userstats"
+	pkgdb "github.com/floroz/gavel/pkg/database"
+	"github.com/floroz/gavel/services/user-stats-service/internal/adapters/database"
+	"github.com/floroz/gavel/services/user-stats-service/internal/adapters/events"
+	"github.com/floroz/gavel/services/user-stats-service/internal/domain/userstats"
 )
 
 func main() {

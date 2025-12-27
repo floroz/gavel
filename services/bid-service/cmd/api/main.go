@@ -13,9 +13,9 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/redis/go-redis/v9"
 
-	pkgdb "github.com/floroz/auction-system/pkg/database"
-	"github.com/floroz/auction-system/services/bid-service/internal/adapters/database"
-	"github.com/floroz/auction-system/services/bid-service/internal/domain/bids"
+	pkgdb "github.com/floroz/gavel/pkg/database"
+	"github.com/floroz/gavel/services/bid-service/internal/adapters/database"
+	"github.com/floroz/gavel/services/bid-service/internal/domain/bids"
 )
 
 func main() {

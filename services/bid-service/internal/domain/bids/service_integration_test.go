@@ -13,11 +13,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/floroz/auction-system/pkg/database"
-	"github.com/floroz/auction-system/pkg/testhelpers"
-	infradb "github.com/floroz/auction-system/services/bid-service/internal/adapters/database"
-	"github.com/floroz/auction-system/services/bid-service/internal/domain/bids"
-	"github.com/floroz/auction-system/services/bid-service/internal/domain/items"
+	"github.com/floroz/gavel/pkg/database"
+	"github.com/floroz/gavel/pkg/testhelpers"
+	infradb "github.com/floroz/gavel/services/bid-service/internal/adapters/database"
+	"github.com/floroz/gavel/services/bid-service/internal/domain/bids"
+	"github.com/floroz/gavel/services/bid-service/internal/domain/items"
 )
 
 // seedTestItem inserts a test item into the database
