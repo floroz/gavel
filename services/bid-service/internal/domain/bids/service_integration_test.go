@@ -1,3 +1,5 @@
+//go:build integration
+
 package bids_test
 
 import (

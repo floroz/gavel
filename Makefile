@@ -64,9 +64,28 @@ run-all: ## Run all services concurrently
 	go run services/user-stats-service/cmd/worker/main.go 2>&1 | sed "s/^/[STATS]   /" & \
 	wait
 
-.PHONY: test
-test: ## Run tests
+.PHONY: build-bid-service
+build-bid-service: ## Build Bid Service Docker image
+	docker build -f services/bid-service/Dockerfile -t bid-service .
+
+.PHONY: build-stats-service
+build-stats-service: ## Build User Stats Service Docker image
+	docker build -f services/user-stats-service/Dockerfile -t user-stats-service .
+
+.PHONY: build-all
+build-all: build-bid-service build-stats-service ## Build all Docker images
+	@echo "All images built successfully."
+
+.PHONY: test-unit
+test-unit: ## Run unit tests
 	go test -v ./...
+
+.PHONY: test-integration
+test-integration: ## Run integration tests
+	go test -v -tags integration ./...
+
+.PHONY: test
+test: test-unit test-integration ## Run all tests
 
 .PHONY: tidy
 tidy: ## Tidy go modules
@@ -107,9 +126,9 @@ install-protoc-plugins: ## Install Go protobuf plugins
 	fi
 	@if ! command -v protoc-gen-go-grpc >/dev/null 2>&1; then \
 		echo "Installing protoc-gen-go-grpc..."; \
-		go install google.golang.org/protobuf/cmd/protoc-gen-go-grpc@latest || \
+		go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest || \
 		(echo "Note: protoc-gen-go-grpc not installed (optional for gRPC)"; \
-		 echo "  Install with: go install google.golang.org/protobuf/cmd/protoc-gen-go-grpc@latest"); \
+		 echo "  Install with: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest"); \
 	else \
 		echo "protoc-gen-go-grpc already installed"; \
 	fi
