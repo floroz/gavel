@@ -36,7 +36,6 @@ func NewTestDatabase(t *testing.T, migrationsPath string) *TestDatabase {
 			wait.ForLog("database system is ready to accept connections").
 				WithOccurrence(2).
 				WithStartupTimeout(5*time.Second)),
-		testcontainers.WithLogger(testcontainers.TestLogger(t)),
 	)
 	if err != nil {
 		t.Fatalf("failed to start postgres container: %s", err)

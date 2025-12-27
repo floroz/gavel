@@ -13,7 +13,6 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/rabbitmq"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -38,7 +37,6 @@ func TestBidConsumerIntegration(t *testing.T) {
 	rabbitmqContainer, err := rabbitmq.Run(ctx,
 		"rabbitmq:3.12-management-alpine",
 		rabbitmq.WithAdminPassword("password"),
-		testcontainers.WithLogger(testcontainers.TestLogger(t)),
 	)
 	require.NoError(t, err)
 	defer func() {
