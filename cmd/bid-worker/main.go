@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/floroz/auction-system/internal/infra/events"
@@ -17,6 +18,10 @@ func main() {
 	// Initialize structured logger
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
+
+	// Load environment variables (local overrides .env)
+	_ = godotenv.Load(".env.local")
+	_ = godotenv.Load()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -31,7 +36,12 @@ func main() {
 	}()
 
 	// 1. Initialize Postgres Connection Pool
-	dbConfig, err := pgxpool.ParseConfig("postgres://user:password@localhost:5432/auction_db")
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		logger.Error("DATABASE_URL is not set")
+		os.Exit(1)
+	}
+	dbConfig, err := pgxpool.ParseConfig(dbURL)
 	if err != nil {
 		logger.Error("Unable to parse database config", "error", err)
 		os.Exit(1)
@@ -51,7 +61,12 @@ func main() {
 	logger.Info("Postgres Connected")
 
 	// 2. Connect to RabbitMQ
-	amqpConn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	rabbitURL := os.Getenv("RABBITMQ_URL")
+	if rabbitURL == "" {
+		logger.Error("RABBITMQ_URL is not set")
+		os.Exit(1)
+	}
+	amqpConn, err := amqp.Dial(rabbitURL)
 	if err != nil {
 		logger.Error("Failed to connect to RabbitMQ", "error", err)
 		os.Exit(1)
