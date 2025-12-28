@@ -1,0 +1,49 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Bid API",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/services/bid-service/cmd/api/main.go",
+            "env": {
+                "BID_DB_URL": "postgres://user:password@localhost:5432/bid_db?sslmode=disable",
+                "RABBITMQ_URL": "amqp://user:password@localhost:5672/",
+                "REDIS_URL": "localhost:6379"
+            }
+        },
+        {
+            "name": "Debug Bid Worker",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/services/bid-service/cmd/worker/main.go",
+            "env": {
+                "BID_DB_URL": "postgres://user:password@localhost:5432/bid_db?sslmode=disable",
+                "RABBITMQ_URL": "amqp://user:password@localhost:5672/"
+            }
+        },
+        {
+            "name": "Debug User Stats API",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/services/user-stats-service/cmd/api/main.go",
+            "env": {
+                "USER_STATS_DB_URL": "postgres://user:password@localhost:5433/stats_db?sslmode=disable"
+            }
+        },
+        {
+            "name": "Debug User Stats Worker",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/services/user-stats-service/cmd/worker/main.go",
+            "env": {
+                "USER_STATS_DB_URL": "postgres://user:password@localhost:5433/stats_db?sslmode=disable",
+                "RABBITMQ_URL": "amqp://user:password@localhost:5672/"
+            }
+        }
+    ]
+}

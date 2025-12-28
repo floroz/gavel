@@ -5,6 +5,14 @@ help: ## Show this help message
 	@echo 'Available targets:'
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
+.PHONY: cluster
+cluster: ## Create/Update local Kind cluster + Registry (ctlptl)
+	ctlptl apply -f deploy/ctlptl.yaml
+
+.PHONY: cluster-delete
+cluster-delete: ## Destroy local Kind cluster + Registry
+	ctlptl delete -f deploy/ctlptl.yaml
+
 .PHONY: dev
 dev: ## Start full development environment (Kubernetes + Tilt)
 	tilt up
@@ -12,65 +20,6 @@ dev: ## Start full development environment (Kubernetes + Tilt)
 .PHONY: clean
 clean: ## Tear down development environment (Kubernetes + Tilt)
 	tilt down
-
-.PHONY: migrate-bids-up
-migrate-bids-up: ## Run Bid Service migrations
-	goose -dir services/bid-service/migrations postgres "host=localhost port=5432 user=user password=password dbname=bid_db sslmode=disable" up
-
-.PHONY: migrate-bids-down
-migrate-bids-down: ## Rollback Bid Service migration
-	goose -dir services/bid-service/migrations postgres "host=localhost port=5432 user=user password=password dbname=bid_db sslmode=disable" down
-
-.PHONY: migrate-bids-create
-migrate-bids-create: ## Create a new Bid Service migration (usage: make migrate-bids-create NAME=add_bids_table)
-	goose -dir services/bid-service/migrations create $(NAME) sql
-
-.PHONY: migrate-stats-up
-migrate-stats-up: ## Run User Stats Service migrations
-	goose -dir services/user-stats-service/migrations postgres "host=localhost port=5433 user=user password=password dbname=stats_db sslmode=disable" up
-
-.PHONY: migrate-stats-down
-migrate-stats-down: ## Rollback User Stats Service migration
-	goose -dir services/user-stats-service/migrations postgres "host=localhost port=5433 user=user password=password dbname=stats_db sslmode=disable" down
-
-.PHONY: migrate-stats-create
-migrate-stats-create: ## Create a new User Stats Service migration
-	goose -dir services/user-stats-service/migrations create $(NAME) sql
-
-.PHONY: migrate-up-all
-migrate-up-all: migrate-bids-up migrate-stats-up ## Run all migrations
-
-.PHONY: migrate-down-all
-migrate-down-all: migrate-bids-down migrate-stats-down ## Rollback all migrations
-
-.PHONY: run-bid-service
-run-bid-service: ## Run the Bid Service (Producer)
-	go run services/bid-service/cmd/api/main.go
-
-.PHONY: run-bid-worker
-run-bid-worker: ## Run the Bid Worker (Outbox Relay)
-	go run services/bid-service/cmd/worker/main.go
-
-.PHONY: run-stats-service
-run-stats-service: ## Run the User Stats Service (Consumer)
-	go run services/user-stats-service/cmd/worker/main.go
-
-.PHONY: run-stats-api
-run-stats-api: ## Run the User Stats Service API (Read Side)
-	go run services/user-stats-service/cmd/api/main.go
-
-
-.PHONY: build-bid-service
-build-bid-service: ## Build Bid Service Docker image
-	docker build -f services/bid-service/Dockerfile -t bid-service .
-
-.PHONY: build-stats-service
-build-stats-service: ## Build User Stats Service Docker image
-	docker build -f services/user-stats-service/Dockerfile -t user-stats-service .
-
-.PHONY: build-all
-build-all: build-bid-service build-stats-service ## Build all Docker images
-	@echo "All images built successfully."
 
 .PHONY: test-unit
 test-unit: ## Run unit tests
@@ -141,12 +90,12 @@ proto-gen: install-protoc ## Generate Go code from protobuf files
 		echo "Please install it with: go install google.golang.org/protobuf/cmd/protoc-gen-go@latest"; \
 		echo "Make sure $$HOME/go/bin (or $$GOPATH/bin) is in your PATH."; \
 		exit 1; \
-	fi
+		fi
 	@if ! command -v protoc-gen-connect-go >/dev/null 2>&1; then \
 		echo "Error: protoc-gen-connect-go not found in PATH."; \
 		echo "Please install it with: go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest"; \
 		exit 1; \
-	fi
+		fi
 	@mkdir -p pkg/proto
 	tools/protoc \
 		--go_out=. \

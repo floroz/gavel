@@ -20,7 +20,7 @@ Gavel is built to solve the complex challenges of modern auction systems:
 *   **Massive Scalability**: Microservices-first design allows independent scaling of the Bid Engine and Analytics components.
 *   **Strict Idempotency**: Guaranteed "at-least-once" delivery with deduplication at the consumer level, ensuring data integrity across the entire cluster.
 *   **Full Observability**: Structured logging and transaction tracing across service boundaries.
-*   **Cloud Native**: Fully containerized and orchestrated via Kubernetes (Kind) with NGINX Ingress.
+*   **Cloud Native**: Fully containerized and orchestrated via Kubernetes (Kind) with NGINX Ingress and Helm Charts.
 
 ---
 
@@ -33,8 +33,8 @@ graph TD
     User((User)) -->|JSON/ConnectRPC| Ingress{NGINX Ingress}
     
     subgraph "Kubernetes Cluster"
-        Ingress -->|/bids.v1...| BidAPI[Bid Service API]
-        Ingress -->|/userstats.v1...| StatsAPI[User Stats API]
+        Ingress -->|api.auction.local/bids.v1...| BidAPI[Bid Service API]
+        Ingress -->|api.auction.local/userstats.v1...| StatsAPI[User Stats API]
         
         subgraph "Bid Domain (Write Side)"
             BidAPI -->|Tx: Save Bid + Outbox Event| BidDB[(Postgres: bid_db)]
@@ -61,7 +61,7 @@ graph TD
 ## 🛠 Tech Stack & Patterns
 
 -   **Language**: Go 1.24+ (Generics, Context-driven)
--   **Orchestration**: Kubernetes (Kind), Helm, Tilt
+-   **Orchestration**: Kubernetes (Kind), Helm, Tilt, ctlptl
 -   **Database**: PostgreSQL (Raw `pgx` for maximum control over transactions)
 -   **Messaging**: RabbitMQ (Topic-based exchanges for decoupled scaling)
 -   **Caching**: Redis (Bidding leaderboards and item metadata)
@@ -79,18 +79,20 @@ We use **ConnectRPC** for the service-to-frontend API. This provides a "best of 
 
 ### Testing Endpoints (JSON)
 
+**Prerequisite**: Add `127.0.0.1 api.auction.local` to your `/etc/hosts` file.
+
 **Place Bid** (Write)
 ```bash
 curl -X POST -H "Content-Type: application/json" \
   -d '{"item_id": "uuid", "user_id": "uuid", "amount": 15000}' \
-  http://localhost:8080/bids.v1.BidService/PlaceBid
+  http://api.auction.local/bids.v1.BidService/PlaceBid
 ```
 
 **Get User Stats** (Read)
 ```bash
 curl -X POST -H "Content-Type: application/json" \
   -d '{"user_id": "uuid"}' \
-  http://localhost:8080/userstats.v1.UserStatsService/GetUserStats
+  http://api.auction.local/userstats.v1.UserStatsService/GetUserStats
 ```
 
 ---
@@ -102,13 +104,17 @@ curl -X POST -H "Content-Type: application/json" \
 *   Kind (`brew install kind`)
 *   Tilt (`brew install tilt-dev/tap/tilt`)
 *   Helm (`brew install helm`)
+*   ctlptl (`brew install ctlptl`)
 *   kubectl
 
 ### 1. Setup Local Cluster
-Initialize a local Kind cluster with a local registry and NGINX Ingress pre-configured:
+We use `ctlptl` for declarative cluster management. This creates a Kind cluster and a local container registry.
+
 ```bash
-./scripts/setup-local-cluster.sh
+make cluster
 ```
+
+**Important**: Ensure you have `127.0.0.1 api.auction.local` in your `/etc/hosts`.
 
 ### 2. Start Development Environment
 Run the entire stack (Infrastructure + Services) with Tilt. This will build images, apply Helm charts, and stream logs:
@@ -116,7 +122,7 @@ Run the entire stack (Infrastructure + Services) with Tilt. This will build imag
 make dev
 ```
 *   Press `Space` to open the Tilt UI
-*   Services are accessible at `http://localhost:8080`
+*   Services are accessible at `http://api.auction.local`
 
 ### 3. Verify Deployment
 Run the verification script to check service health:
@@ -132,9 +138,9 @@ Run the verification script to check service health:
 |:---|:---|
 | `make dev` | **Recommended**: Start full k8s dev environment (Tilt) |
 | `make clean` | Tear down k8s resources (Tilt) |
-| `./scripts/setup-local-cluster.sh` | Create Kind cluster + Registry |
+| `make cluster` | Create/Update Kind cluster + Registry |
+| `make cluster-delete` | Destroy Cluster + Registry |
 | `make proto-gen` | Rebuild Protobuf definitions (Go) |
 | `make proto-gen-ts` | Generate TypeScript clients |
 | `make lint` | Run linters |
 | `make test` | Run full test suite |
-
