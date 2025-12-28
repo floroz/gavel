@@ -5,13 +5,13 @@ help: ## Show this help message
 	@echo 'Available targets:'
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-.PHONY: up
-up: ## Start infrastructure services
-	docker compose up -d
+.PHONY: dev
+dev: ## Start full development environment (Kubernetes + Tilt)
+	tilt up
 
-.PHONY: down
-down: ## Stop infrastructure services
-	docker compose down
+.PHONY: clean
+clean: ## Tear down development environment (Kubernetes + Tilt)
+	tilt down
 
 .PHONY: migrate-bids-up
 migrate-bids-up: ## Run Bid Service migrations
@@ -59,14 +59,6 @@ run-stats-service: ## Run the User Stats Service (Consumer)
 run-stats-api: ## Run the User Stats Service API (Read Side)
 	go run services/user-stats-service/cmd/api/main.go
 
-.PHONY: run-all
-run-all: ## Run all services concurrently
-	@echo "Starting all services... Press Ctrl+C to stop."
-	@trap 'kill 0' INT; \
-	go run services/bid-service/cmd/api/main.go 2>&1 | sed "s/^/[BID-API] /" & \
-	go run services/bid-service/cmd/worker/main.go 2>&1 | sed "s/^/[WORKER]  /" & \
-	go run services/user-stats-service/cmd/worker/main.go 2>&1 | sed "s/^/[STATS]   /" & \
-	wait
 
 .PHONY: build-bid-service
 build-bid-service: ## Build Bid Service Docker image

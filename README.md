@@ -1,6 +1,8 @@
 # 🔨 Gavel: High-Performance Real-Time Auction System
 
 [![Go Version](https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat-square&logo=go)](https://go.dev/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-Latest-326CE5?style=flat-square&logo=kubernetes)](https://kubernetes.io/)
+[![Tilt](https://img.shields.io/badge/Tilt-Dev_Env-23C6C8?style=flat-square&logo=tilt)](https://tilt.dev/)
 [![Postgres](https://img.shields.io/badge/Postgres-16-336791?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Latest-FF6600?style=flat-square&logo=rabbitmq)](https://www.rabbitmq.com/)
 [![Redis](https://img.shields.io/badge/Redis-Latest-DC382D?style=flat-square&logo=redis)](https://redis.io/)
@@ -18,6 +20,7 @@ Gavel is built to solve the complex challenges of modern auction systems:
 *   **Massive Scalability**: Microservices-first design allows independent scaling of the Bid Engine and Analytics components.
 *   **Strict Idempotency**: Guaranteed "at-least-once" delivery with deduplication at the consumer level, ensuring data integrity across the entire cluster.
 *   **Full Observability**: Structured logging and transaction tracing across service boundaries.
+*   **Cloud Native**: Fully containerized and orchestrated via Kubernetes (Kind) with NGINX Ingress.
 
 ---
 
@@ -27,35 +30,30 @@ The system leverages a decoupled **Ports & Adapters (Hexagonal)** architecture, 
 
 ```mermaid
 graph TD
-    User((User)) -->|JSON/ConnectRPC| LB{Load Balancer}
-
-    subgraph "Bid Domain (Write Side)"
-        LB -->|/bids.v1...| BidAPI[Bid Service API]
-        Worker[Bid Outbox Worker]
-        BidDB[(Postgres: bid_db)]
-    end
-
-    subgraph "Analytics Domain (Read Side)"
-        LB -->|/userstats.v1...| StatsAPI[User Stats API]
-        StatsWorker[User Stats Consumer]
-        StatsDB[(Postgres: stats_db)]
-    end
-
-    subgraph "Infrastructure"
-        RMQ(RabbitMQ)
-        Redis(Redis Cache)
-    end
-
-    %% Flows
-    BidAPI -->|Tx: Save Bid + Outbox Event| BidDB
+    User((User)) -->|JSON/ConnectRPC| Ingress{NGINX Ingress}
     
-    Worker -->|Poll Outbox Table| BidDB
-    Worker -->|Publish Event| RMQ
-    
-    RMQ -->|Consume: BidPlaced| StatsWorker
-    StatsWorker -->|Update User Totals| StatsDB
-    
-    StatsAPI -->|Read| StatsDB
+    subgraph "Kubernetes Cluster"
+        Ingress -->|/bids.v1...| BidAPI[Bid Service API]
+        Ingress -->|/userstats.v1...| StatsAPI[User Stats API]
+        
+        subgraph "Bid Domain (Write Side)"
+            BidAPI -->|Tx: Save Bid + Outbox Event| BidDB[(Postgres: bid_db)]
+            Worker[Bid Outbox Worker]
+            Worker -->|Poll Outbox Table| BidDB
+        end
+        
+        subgraph "Analytics Domain (Read Side)"
+            StatsAPI -->|Read| StatsDB[(Postgres: stats_db)]
+            StatsWorker[User Stats Consumer]
+            StatsWorker -->|Update User Totals| StatsDB
+        end
+        
+        subgraph "Infrastructure"
+            Worker -->|Publish Event| RMQ(RabbitMQ)
+            RMQ -->|Consume: BidPlaced| StatsWorker
+            BidAPI -->|Cache| Redis(Redis Cache)
+        end
+    end
 ```
 
 ---
@@ -63,6 +61,7 @@ graph TD
 ## 🛠 Tech Stack & Patterns
 
 -   **Language**: Go 1.24+ (Generics, Context-driven)
+-   **Orchestration**: Kubernetes (Kind), Helm, Tilt
 -   **Database**: PostgreSQL (Raw `pgx` for maximum control over transactions)
 -   **Messaging**: RabbitMQ (Topic-based exchanges for decoupled scaling)
 -   **Caching**: Redis (Bidding leaderboards and item metadata)
@@ -91,29 +90,38 @@ curl -X POST -H "Content-Type: application/json" \
 ```bash
 curl -X POST -H "Content-Type: application/json" \
   -d '{"user_id": "uuid"}' \
-  http://localhost:8081/userstats.v1.UserStatsService/GetUserStats
+  http://localhost:8080/userstats.v1.UserStatsService/GetUserStats
 ```
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Quick Start (Kubernetes w/ Tilt)
 
-### 1. Initialize Infrastructure
-Spin up the core services (Postgres, RabbitMQ, and Redis):
+### Prerequisites
+*   Docker
+*   Kind (`brew install kind`)
+*   Tilt (`brew install tilt-dev/tap/tilt`)
+*   Helm (`brew install helm`)
+*   kubectl
+
+### 1. Setup Local Cluster
+Initialize a local Kind cluster with a local registry and NGINX Ingress pre-configured:
 ```bash
-make up
+./scripts/setup-local-cluster.sh
 ```
 
-### 2. Apply Migrations
-Prepare the schemas for both the Bid and Statistics databases:
+### 2. Start Development Environment
+Run the entire stack (Infrastructure + Services) with Tilt. This will build images, apply Helm charts, and stream logs:
 ```bash
-make migrate-up-all
+make dev
 ```
+*   Press `Space` to open the Tilt UI
+*   Services are accessible at `http://localhost:8080`
 
-### 3. Launch Services
-Run the API and background workers:
+### 3. Verify Deployment
+Run the verification script to check service health:
 ```bash
-make run-all
+./scripts/verify-deployment.sh
 ```
 
 ---
@@ -122,13 +130,11 @@ make run-all
 
 | Command | Action |
 |:---|:---|
-| `make up / down` | Control local infrastructure |
-| `make test` | Run full test suite (Unit + Integration) |
-| `make build-all` | Compile production binaries / Docker images |
+| `make dev` | **Recommended**: Start full k8s dev environment (Tilt) |
+| `make clean` | Tear down k8s resources (Tilt) |
+| `./scripts/setup-local-cluster.sh` | Create Kind cluster + Registry |
 | `make proto-gen` | Rebuild Protobuf definitions (Go) |
 | `make proto-gen-ts` | Generate TypeScript clients |
-| `make run-stats-api` | Run User Stats API (Read) |
+| `make lint` | Run linters |
+| `make test` | Run full test suite |
 
----
-
-> **Note**: This system is architected for deployment in Kubernetes environments. Check the `docs/PLAN.md` for the upcoming roadmap.
