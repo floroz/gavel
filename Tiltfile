@@ -91,27 +91,7 @@ deploy_helm('redis',
 )
 
 # =============================================================================
-# 2. Database Migrations (Jobs)
-# =============================================================================
-
-# Bid Service Migrations
-k8s_yaml('deploy/k8s/apps/bid-service/migration-job.yaml')
-k8s_resource(
-  'bid-service-migrate',
-  labels=['migrations'],
-  resource_deps=['postgres-bids']
-)
-
-# User Stats Service Migrations
-k8s_yaml('deploy/k8s/apps/user-stats-service/migration-job.yaml')
-k8s_resource(
-  'user-stats-service-migrate',
-  labels=['migrations'],
-  resource_deps=['postgres-stats']
-)
-
-# =============================================================================
-# 3. Application Services
+# 2. Application Services (Helm Charts)
 # =============================================================================
 
 # Bid Service
@@ -121,19 +101,23 @@ docker_build('bid-service',
   ignore=['frontend', 'docs']
 )
 
-k8s_yaml([
-  'deploy/k8s/apps/bid-service/deployment.yaml',
-  'deploy/k8s/apps/bid-service/service.yaml',
-  'deploy/k8s/apps/bid-service/ingress.yaml'
-])
+bid_service_yaml = helm(
+    './deploy/charts/bid-service',
+    name='bid-service',
+    values=['./deploy/charts/bid-service/values.yaml']
+)
+k8s_yaml(bid_service_yaml)
+
+k8s_resource('bid-service-migrate', 
+  labels=['migrations'], 
+  resource_deps=['postgres-bids']
+)
 k8s_resource('bid-service-api', 
-  labels=['app'],
-  port_forwards=[], 
+  labels=['app'], 
   resource_deps=['postgres-bids', 'rabbitmq', 'redis', 'bid-service-migrate']
 )
 k8s_resource('bid-service-worker', 
-  labels=['app'],
-  port_forwards=[], 
+  labels=['app'], 
   resource_deps=['postgres-bids', 'rabbitmq', 'bid-service-migrate']
 )
 
@@ -145,20 +129,22 @@ docker_build('user-stats-service',
   ignore=['frontend', 'docs']
 )
 
-k8s_yaml([
-  'deploy/k8s/apps/user-stats-service/deployment.yaml',
-  'deploy/k8s/apps/user-stats-service/service.yaml',
-  'deploy/k8s/apps/user-stats-service/ingress.yaml'
-])
+user_stats_service_yaml = helm(
+    './deploy/charts/user-stats-service',
+    name='user-stats-service',
+    values=['./deploy/charts/user-stats-service/values.yaml']
+)
+k8s_yaml(user_stats_service_yaml)
+
+k8s_resource('user-stats-service-migrate', 
+  labels=['migrations'], 
+  resource_deps=['postgres-stats']
+)
 k8s_resource('user-stats-service-api', 
-  labels=['app'],
-  port_forwards=[], 
+  labels=['app'], 
   resource_deps=['postgres-stats', 'rabbitmq', 'user-stats-service-migrate']
 )
 k8s_resource('user-stats-service-worker', 
-  labels=['app'],
-  port_forwards=[], 
+  labels=['app'], 
   resource_deps=['postgres-stats', 'rabbitmq', 'user-stats-service-migrate']
 )
-
-
