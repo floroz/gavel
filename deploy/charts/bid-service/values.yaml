@@ -1,0 +1,29 @@
+image:
+  repository: bid-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  className: nginx
+  host: api.auction.local
+
+config:
+  bidDbUrl: "postgres://user:password@postgres-bids-postgresql:5432/bid_db?sslmode=disable"
+  rabbitmqUrl: "amqp://user:password@rabbitmq:5672/"
+  redisUrl: "redis-master:6379"
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "50m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
+
+api:
+  replicaCount: 1
+
+worker:
+  replicaCount: 1
+
