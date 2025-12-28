@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE_URL="http://localhost:8080"
+BASE_URL="http://api.auction.local"
 
 echo "Verifying Bid Service..."
 # Sending an empty JSON to PlaceBid. Expecting a response (likely an error or empty success depending on validation).
