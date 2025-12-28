@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-stats-service-api
+  labels:
+    app: user-stats-service
+    component: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-stats-service
+      component: api
+  template:
+    metadata:
+      labels:
+        app: user-stats-service
+        component: api
+    spec:
+      # Init container to wait for dependencies
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z postgres-stats-postgresql 5432; do echo "Waiting for PostgreSQL..."; sleep 2; done']
+      containers:
+        - name: api
+          image: user-stats-service
+          command: ["/app/stats-service"]
+          ports:
+            - containerPort: 8081
+          env:
+            - name: USER_STATS_DB_URL
+              value: "postgres://user:password@postgres-stats-postgresql:5432/stats_db?sslmode=disable"
+          # Health checks for the API
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-stats-service-worker
+  labels:
+    app: user-stats-service
+    component: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-stats-service
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: user-stats-service
+        component: worker
+    spec:
+      # Init container to wait for dependencies
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z postgres-stats-postgresql 5432; do echo "Waiting for PostgreSQL..."; sleep 2; done']
+        - name: wait-for-rabbitmq
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z rabbitmq 5672; do echo "Waiting for RabbitMQ..."; sleep 2; done']
+      containers:
+        - name: worker
+          image: user-stats-service
+          command: ["/app/stats-worker"]
+          env:
+            - name: USER_STATS_DB_URL
+              value: "postgres://user:password@postgres-stats-postgresql:5432/stats_db?sslmode=disable"
+            - name: RABBITMQ_URL
+              value: "amqp://user:password@rabbitmq:5672/"
+          # Workers don't have HTTP endpoints, so use exec probe
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "pgrep -f stats-worker"
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
