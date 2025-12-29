@@ -1,25 +1,25 @@
 # 🔨 Gavel: High-Performance Real-Time Auction System
 
-[![Go Version](https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat-square&logo=go)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat-square&logo=go)](https://go.dev/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-Latest-326CE5?style=flat-square&logo=kubernetes)](https://kubernetes.io/)
 [![Tilt](https://img.shields.io/badge/Tilt-Dev_Env-23C6C8?style=flat-square&logo=tilt)](https://tilt.dev/)
 [![Postgres](https://img.shields.io/badge/Postgres-16-336791?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-Latest-FF6600?style=flat-square&logo=rabbitmq)](https://www.rabbitmq.com/)
 [![Redis](https://img.shields.io/badge/Redis-Latest-DC382D?style=flat-square&logo=redis)](https://redis.io/)
 
-A distributed, production-ready auction platform engineered for high-concurrency bidding and data consistency. Built with Go, Postgres, and RabbitMQ, Gavel implements a robust event-driven architecture designed to handle thousands of bids per second with sub-millisecond precision.
+A distributed auction platform designed for data consistency and architectural resilience. Built with Go, Postgres, and RabbitMQ, Gavel leverages ConnectRPC and Protobuf for high-performance, type-safe API communication, alongside a robust event-driven architecture (Transactional Outbox) to decouple services and ensure reliable state management across the system.
 
 ---
 
 ## 🚀 Key Capabilities
 
-Gavel is built to solve the complex challenges of modern auction systems:
+Gavel is designed to demonstrate robust distributed system patterns:
 
-*   **Zero-Loss Event Delivery**: Implements the **Transactional Outbox Pattern** to ensure absolute consistency between database state and message delivery.
-*   **High-Concurrency Locking**: Utilizes advanced Postgres row-level locking (`SELECT FOR UPDATE`) to prevent race conditions during "sniping" scenarios.
-*   **Massive Scalability**: Microservices-first design allows independent scaling of the Bid Engine and Analytics components.
-*   **Strict Idempotency**: Guaranteed "at-least-once" delivery with deduplication at the consumer level, ensuring data integrity across the entire cluster.
-*   **Full Observability**: Structured logging and transaction tracing across service boundaries.
+*   **Reliable Event Delivery**: Implements the **Transactional Outbox Pattern** to ensure consistency between database state and message publishing.
+*   **Data Integrity**: Utilizes Postgres row-level locking (`SELECT FOR UPDATE`) to manage concurrency and prevent race conditions.
+*   **Independent Scalability**: Decoupled microservices design allowing the Bid Engine and Analytics components to scale independently.
+*   **Idempotency**: "At-least-once" delivery with consumer-side deduplication to ensure correct data processing despite retries.
+*   **Observability**: Centralized structured logging (`log/slog`) across all services.
 *   **Cloud Native**: Fully containerized and orchestrated via Kubernetes (Kind) with NGINX Ingress and Helm Charts.
 
 ---
@@ -38,7 +38,8 @@ graph TD
         Ingress -- "Bearer JWT (Claims)" --> StatsAPI["User Stats API<br/>(w/ Auth Middleware)"]
         
         subgraph "Identity Domain"
-            AuthAPI -->|AuthN & Issue Tokens| AuthDB[(Postgres: auth_db)]
+            AuthAPI -->|Tx: Save User + Outbox Event| AuthDB[(Postgres: auth_db)]
+            AuthAPI -->|Poll Outbox - Background| AuthDB
         end
 
         subgraph "Bid Domain (Write Side)"
@@ -54,8 +55,9 @@ graph TD
         end
         
         subgraph "Infrastructure"
-            Worker -->|Publish Event| RMQ(RabbitMQ)
-            RMQ -->|Consume: BidPlaced| StatsWorker
+            Worker -->|Publish BidPlaced| RMQ(RabbitMQ)
+            AuthAPI -->|Publish UserCreated| RMQ
+            RMQ -->|Consume: BidPlaced, UserCreated| StatsWorker
             BidAPI -->|Cache| Redis(Redis Cache)
         end
     end
@@ -65,7 +67,7 @@ graph TD
 
 ## 🛠 Tech Stack & Patterns
 
--   **Language**: Go 1.24+ (Generics, Context-driven)
+-   **Language**: Go 1.25+ (Generics, Context-driven)
 -   **Orchestration**: Kubernetes (Kind), Helm, Tilt, ctlptl
 -   **Database**: PostgreSQL (Raw `pgx` for maximum control over transactions)
 -   **Messaging**: RabbitMQ (Topic-based exchanges for decoupled scaling)
