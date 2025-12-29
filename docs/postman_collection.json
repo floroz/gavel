@@ -6,67 +6,242 @@
 	},
 	"item": [
 		{
-			"name": "Place Bid",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"item_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"user_id\": \"990e8400-e29b-41d4-a716-446655449999\",\n  \"amount\": 15000\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"full_name\": \"Test User\",\n  \"country_code\": \"CH\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://api.auction.local/auth.v1.AuthService/Register",
+							"protocol": "http",
+							"host": [
+								"api",
+								"auction",
+								"local"
+							],
+							"path": [
+								"auth.v1.AuthService",
+								"Register"
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "http://api.auction.local/bids.v1.BidService/PlaceBid",
-					"protocol": "http",
-					"host": [
-						"api",
-						"auction",
-						"local"
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.accessToken) {",
+									"    pm.environment.set(\"accessToken\", jsonData.accessToken);",
+									"    pm.environment.set(\"refreshToken\", jsonData.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
 					],
-					"port": "80",
-					"path": [
-						"bids.v1.BidService",
-						"PlaceBid"
-					]
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://api.auction.local/auth.v1.AuthService/Login",
+							"protocol": "http",
+							"host": [
+								"api",
+								"auction",
+								"local"
+							],
+							"path": [
+								"auth.v1.AuthService",
+								"Login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": \"USER_UUID_HERE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://api.auction.local/auth.v1.AuthService/GetProfile",
+							"protocol": "http",
+							"host": [
+								"api",
+								"auction",
+								"local"
+							],
+							"path": [
+								"auth.v1.AuthService",
+								"GetProfile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.accessToken) {",
+									"    pm.environment.set(\"accessToken\", jsonData.accessToken);",
+									"    pm.environment.set(\"refreshToken\", jsonData.refreshToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://api.auction.local/auth.v1.AuthService/Refresh",
+							"protocol": "http",
+							"host": [
+								"api",
+								"auction",
+								"local"
+							],
+							"path": [
+								"auth.v1.AuthService",
+								"Refresh"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Get User Stats",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"user_id\": \"990e8400-e29b-41d4-a716-446655449999\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
+			"name": "Bids",
+			"item": [
+				{
+					"name": "Place Bid",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"item_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"user_id\": \"990e8400-e29b-41d4-a716-446655449999\",\n  \"amount\": 15000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://api.auction.local/bids.v1.BidService/PlaceBid",
+							"protocol": "http",
+							"host": [
+								"api",
+								"auction",
+								"local"
+							],
+							"path": [
+								"bids.v1.BidService",
+								"PlaceBid"
+							]
 						}
-					}
-				},
-				"url": {
-					"raw": "http://api.auction.local/userstats.v1.UserStatsService/GetUserStats",
-					"protocol": "http",
-					"host": [
-						"api",
-						"auction",
-						"local"
-					],
-					"port": "80",
-					"path": [
-						"userstats.v1.UserStatsService",
-						"GetUserStats"
-					]
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
+		},
+		{
+			"name": "User Stats",
+			"item": [
+				{
+					"name": "Get User Stats",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"user_id\": \"990e8400-e29b-41d4-a716-446655449999\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://api.auction.local/userstats.v1.UserStatsService/GetUserStats",
+							"protocol": "http",
+							"host": [
+								"api",
+								"auction",
+								"local"
+							],
+							"path": [
+								"userstats.v1.UserStatsService",
+								"GetUserStats"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
-
