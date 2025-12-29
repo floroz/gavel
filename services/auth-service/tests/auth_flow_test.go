@@ -5,10 +5,11 @@ import (
 	"testing"
 
 	"connectrpc.com/connect"
-	authv1 "github.com/floroz/gavel/pkg/proto/auth/v1"
-	"github.com/floroz/gavel/pkg/testhelpers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	authv1 "github.com/floroz/gavel/pkg/proto/auth/v1"
+	"github.com/floroz/gavel/pkg/testhelpers"
 )
 
 func TestAuth_Flows(t *testing.T) {
@@ -35,6 +36,10 @@ func TestAuth_Flows(t *testing.T) {
 		user := verifyUserExists(t, pool, "newuser@example.com")
 		require.NotNil(t, user)
 		assert.Equal(t, "New User", user.FullName)
+
+		// Verify Outbox Event
+		exists := verifyOutboxEventExists(t, pool, "user.created")
+		assert.True(t, exists, "UserCreated event should be in outbox")
 	})
 
 	t.Run("Register_DuplicateEmail", func(t *testing.T) {

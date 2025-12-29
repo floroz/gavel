@@ -21,6 +21,16 @@ type TokenRepository interface {
 	RevokeAllUserTokens(ctx context.Context, tx pgx.Tx, userID uuid.UUID) error
 }
 
+type OutboxRepository interface {
+	CreateEvent(ctx context.Context, tx pgx.Tx, event *OutboxEvent) error
+	GetPendingEvents(ctx context.Context, tx pgx.Tx, limit int) ([]*OutboxEvent, error)
+	UpdateEventStatus(ctx context.Context, tx pgx.Tx, id uuid.UUID, status OutboxStatus) error
+}
+
+type EventPublisher interface {
+	Publish(ctx context.Context, exchange, routingKey string, body []byte) error
+}
+
 type AuthService interface {
 	Register(ctx context.Context, email, password, fullName, countryCode string) (*User, error)
 	Login(ctx context.Context, email, password, userAgent, ip string) (accessToken, refreshToken string, err error)

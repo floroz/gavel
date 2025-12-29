@@ -9,14 +9,17 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
 	"github.com/floroz/gavel/pkg/auth"
 	pkgdb "github.com/floroz/gavel/pkg/database"
+	pkgevents "github.com/floroz/gavel/pkg/events"
 	"github.com/floroz/gavel/pkg/proto/auth/v1/authv1connect"
 	"github.com/floroz/gavel/services/auth-service/internal/adapters/api"
 	"github.com/floroz/gavel/services/auth-service/internal/adapters/database"
+	authEvents "github.com/floroz/gavel/services/auth-service/internal/adapters/events"
 	"github.com/floroz/gavel/services/auth-service/internal/domain/users"
 )
 
@@ -84,15 +87,55 @@ func main() {
 	}
 	logger.Info("Postgres Connected")
 
-	// 3. Initialize Repositories
+	// 3. Initialize RabbitMQ
+	rabbitURL := os.Getenv("RABBITMQ_URL")
+	if rabbitURL == "" {
+		logger.Error("RABBITMQ_URL is not set")
+		os.Exit(1)
+	}
+	amqpConn, err := amqp.Dial(rabbitURL)
+	if err != nil {
+		logger.Error("Failed to connect to RabbitMQ", "error", err)
+		os.Exit(1)
+	}
+	defer amqpConn.Close()
+	logger.Info("RabbitMQ Connected")
+
+	rabbitPublisher, err := pkgevents.NewRabbitMQPublisher(amqpConn)
+	if err != nil {
+		logger.Error("Failed to create RabbitMQ publisher", "error", err)
+		os.Exit(1)
+	}
+	defer rabbitPublisher.Close()
+
+	// 4. Initialize Repositories
 	txManager := pkgdb.NewPostgresTransactionManager(pool, 5*time.Second)
 	userRepo := database.NewPostgresUserRepository(pool)
 	tokenRepo := database.NewPostgresTokenRepository(pool)
+	outboxRepo := database.NewPostgresOutboxRepository(pool)
 
-	// 4. Initialize Service
-	authService := users.NewService(userRepo, tokenRepo, signer, txManager)
+	// 5. Initialize Service
+	authService := users.NewService(userRepo, tokenRepo, outboxRepo, signer, txManager)
 
-	// 5. Initialize API Handler (ConnectRPC)
+	// 6. Start Outbox Relay
+	outboxRelay := authEvents.NewOutboxRelay(
+		outboxRepo,
+		rabbitPublisher,
+		txManager,
+		10,            // batch size
+		5*time.Second, // interval
+		logger,
+	)
+
+	// Run relay in background
+	go func() {
+		logger.Info("Starting Outbox Relay...")
+		if err := outboxRelay.Run(ctx); err != nil {
+			logger.Error("Outbox Relay stopped", "error", err)
+		}
+	}()
+
+	// 7. Initialize API Handler (ConnectRPC)
 	authHandler := api.NewAuthServiceHandler(authService)
 	path, handler := authv1connect.NewAuthServiceHandler(authHandler)
 

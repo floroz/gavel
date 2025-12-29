@@ -8,9 +8,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/google/uuid"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/floroz/gavel/pkg/auth"
 	"github.com/floroz/gavel/pkg/database"
-	"github.com/google/uuid"
+	pb "github.com/floroz/gavel/pkg/proto"
 )
 
 var (
@@ -22,23 +26,26 @@ var (
 )
 
 type Service struct {
-	userRepo  UserRepository
-	tokenRepo TokenRepository
-	signer    *auth.Signer
-	txManager database.TransactionManager
+	userRepo   UserRepository
+	tokenRepo  TokenRepository
+	outboxRepo OutboxRepository
+	signer     *auth.Signer
+	txManager  database.TransactionManager
 }
 
 func NewService(
 	userRepo UserRepository,
 	tokenRepo TokenRepository,
+	outboxRepo OutboxRepository,
 	signer *auth.Signer,
 	txManager database.TransactionManager,
 ) *Service {
 	return &Service{
-		userRepo:  userRepo,
-		tokenRepo: tokenRepo,
-		signer:    signer,
-		txManager: txManager,
+		userRepo:   userRepo,
+		tokenRepo:  tokenRepo,
+		outboxRepo: outboxRepo,
+		signer:     signer,
+		txManager:  txManager,
 	}
 }
 
@@ -74,7 +81,7 @@ func (s *Service) Register(ctx context.Context, email, password, fullName, count
 		UpdatedAt:    now,
 	}
 
-	// Transaction: Save User (and later outbox event)
+	// Transaction: Save User and Outbox Event
 	tx, err := s.txManager.BeginTx(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
@@ -83,6 +90,31 @@ func (s *Service) Register(ctx context.Context, email, password, fullName, count
 
 	if err := s.userRepo.CreateUser(ctx, tx, user); err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+
+	// Create Outbox Event
+	event := &pb.UserCreated{
+		UserId:      user.ID.String(),
+		Email:       user.Email,
+		FullName:    user.FullName,
+		CountryCode: user.CountryCode,
+		CreatedAt:   timestamppb.New(user.CreatedAt),
+	}
+	payload, err := proto.Marshal(event)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal event: %w", err)
+	}
+
+	outboxEvent := &OutboxEvent{
+		ID:        uuid.New(),
+		EventType: "user.created",
+		Payload:   payload,
+		Status:    OutboxStatusPending,
+		CreatedAt: now,
+	}
+
+	if err := s.outboxRepo.CreateEvent(ctx, tx, outboxEvent); err != nil {
+		return nil, fmt.Errorf("failed to create outbox event: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {

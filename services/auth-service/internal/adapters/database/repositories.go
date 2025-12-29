@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/floroz/gavel/services/auth-service/internal/domain/users"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/floroz/gavel/services/auth-service/internal/domain/users"
 )
 
 // PostgresUserRepository implements users.UserRepository

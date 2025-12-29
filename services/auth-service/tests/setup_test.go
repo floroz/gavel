@@ -11,15 +11,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/require"
+
 	"github.com/floroz/gavel/pkg/auth"
 	"github.com/floroz/gavel/pkg/database"
 	"github.com/floroz/gavel/pkg/proto/auth/v1/authv1connect"
 	"github.com/floroz/gavel/services/auth-service/internal/adapters/api"
 	infradb "github.com/floroz/gavel/services/auth-service/internal/adapters/database"
 	"github.com/floroz/gavel/services/auth-service/internal/domain/users"
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/stretchr/testify/require"
 )
 
 // setupAuthApp wires up the application for testing using a real database connection.
@@ -28,6 +29,7 @@ func setupAuthApp(t *testing.T, pool *pgxpool.Pool) (authv1connect.AuthServiceCl
 	txManager := database.NewPostgresTransactionManager(pool, 5*time.Second)
 	userRepo := infradb.NewPostgresUserRepository(pool)
 	tokenRepo := infradb.NewPostgresTokenRepository(pool)
+	outboxRepo := infradb.NewPostgresOutboxRepository(pool)
 
 	// 2. Initialize Dependencies
 	// Generate ephemeral RSA keys for testing
@@ -51,7 +53,7 @@ func setupAuthApp(t *testing.T, pool *pgxpool.Pool) (authv1connect.AuthServiceCl
 	require.NoError(t, err)
 
 	// 3. Initialize Service
-	authService := users.NewService(userRepo, tokenRepo, signer, txManager)
+	authService := users.NewService(userRepo, tokenRepo, outboxRepo, signer, txManager)
 
 	// 4. Initialize API Handler
 	authHandler := api.NewAuthServiceHandler(authService)
@@ -91,6 +93,15 @@ func verifyTokenExists(t *testing.T, pool *pgxpool.Pool, userID uuid.UUID) bool 
 	var count int
 	query := `SELECT COUNT(*) FROM refresh_tokens WHERE user_id = $1 AND revoked = false`
 	row := pool.QueryRow(context.Background(), query, userID)
+	_ = row.Scan(&count)
+	return count > 0
+}
+
+func verifyOutboxEventExists(t *testing.T, pool *pgxpool.Pool, eventType string) bool {
+	t.Helper()
+	var count int
+	query := `SELECT COUNT(*) FROM outbox_events WHERE event_type = $1`
+	row := pool.QueryRow(context.Background(), query, eventType)
 	_ = row.Scan(&count)
 	return count > 0
 }
