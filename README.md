@@ -33,33 +33,38 @@ graph TD
     User((User)) -->|JSON/ConnectRPC| Ingress{NGINX Ingress}
     
     subgraph "Kubernetes Cluster"
-        Ingress -->|api.auction.local/auth.v1...| AuthAPI[Auth Service]
-        Ingress -- "Bearer JWT (Claims)" --> BidAPI["Bid Service API<br/>(w/ Auth Middleware)"]
-        Ingress -- "Bearer JWT (Claims)" --> StatsAPI["User Stats API<br/>(w/ Auth Middleware)"]
-        
+        %% Shared Infrastructure
+        RMQ(RabbitMQ)
+        Redis(Redis Cache)
+
         subgraph "Identity Domain"
-            AuthAPI -->|Tx: Save User + Outbox Event| AuthDB[(Postgres: auth_db)]
+            AuthAPI[Auth Service] -->|Tx: Save User + Outbox Event| AuthDB[(Postgres: auth_db)]
             AuthAPI -->|Poll Outbox - Background| AuthDB
         end
 
-        subgraph "Bid Domain (Write Side)"
-            BidAPI -->|Tx: Save Bid + Outbox Event| BidDB[(Postgres: bid_db)]
-            Worker[Bid Outbox Worker]
-            Worker -->|Poll Outbox Table| BidDB
+        subgraph "Bid Domain"
+            BidAPI[Bid Service API] -->|Tx: Save Bid + Outbox Event| BidDB[(Postgres: bid_db)]
+            BidWorker[Bid Outbox Worker] -->|Poll Outbox Table| BidDB
         end
         
-        subgraph "Analytics Domain (Read Side)"
-            StatsAPI -->|Read| StatsDB[(Postgres: stats_db)]
-            StatsWorker[User Stats Consumer]
-            StatsWorker -->|Update User Totals| StatsDB
+        subgraph "Analytics Domain"
+            StatsAPI[User Stats API] -->|Read| StatsDB[(Postgres: stats_db)]
+            StatsWorker[User Stats Consumer] -->|Update User Totals| StatsDB
         end
+
+        %% Routing
+        Ingress -->|api.auction.local/auth.v1...| AuthAPI
+        Ingress -- "Bearer JWT (Claims)" --> BidAPI
+        Ingress -- "Bearer JWT (Claims)" --> StatsAPI
+
+        %% Event Flow & Caching
+        AuthAPI -- Publish UserCreated --> RMQ
+        BidWorker -- Publish BidPlaced --> RMQ
         
-        subgraph "Infrastructure"
-            Worker -->|Publish BidPlaced| RMQ(RabbitMQ)
-            AuthAPI -->|Publish UserCreated| RMQ
-            RMQ -->|Consume: BidPlaced, UserCreated| StatsWorker
-            BidAPI -->|Cache| Redis(Redis Cache)
-        end
+        RMQ -- Consume: BidPlaced --> StatsWorker
+        RMQ -- Consume: UserCreated --> StatsWorker
+        
+        BidAPI -.->|Cache| Redis
     end
 ```
 
