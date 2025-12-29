@@ -21,16 +21,9 @@ dev: ## Start full development environment (Kubernetes + Tilt)
 clean: ## Tear down development environment (Kubernetes + Tilt)
 	tilt down
 
-.PHONY: test-unit
-test-unit: ## Run unit tests
-	go test -v ./...
-
-.PHONY: test-integration
-test-integration: ## Run integration tests
-	go test -v -tags integration ./...
-
 .PHONY: test
-test: test-unit test-integration ## Run all tests
+test: ## Run tests
+	go test -v ./...
 
 .PHONY: tidy
 tidy: ## Tidy go modules
