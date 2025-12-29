@@ -7,15 +7,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/require"
+
 	"github.com/floroz/gavel/pkg/database"
 	"github.com/floroz/gavel/pkg/proto/bids/v1/bidsv1connect"
 	"github.com/floroz/gavel/services/bid-service/internal/adapters/api"
 	infradb "github.com/floroz/gavel/services/bid-service/internal/adapters/database"
 	"github.com/floroz/gavel/services/bid-service/internal/domain/bids"
 	"github.com/floroz/gavel/services/bid-service/internal/domain/items"
-	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/stretchr/testify/require"
 )
 
 // setupBidApp wires up the application for testing using a real database connection.

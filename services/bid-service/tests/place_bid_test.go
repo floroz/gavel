@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	bidsv1 "github.com/floroz/gavel/pkg/proto/bids/v1"
-	"github.com/floroz/gavel/pkg/testhelpers"
-	"github.com/floroz/gavel/services/bid-service/internal/domain/items"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	bidsv1 "github.com/floroz/gavel/pkg/proto/bids/v1"
+	"github.com/floroz/gavel/pkg/testhelpers"
+	"github.com/floroz/gavel/services/bid-service/internal/domain/items"
 )
 
 func TestPlaceBid_Scenarios(t *testing.T) {
