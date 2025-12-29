@@ -1,0 +1,11 @@
+global:
+  postgresql:
+    auth:
+      postgresPassword: password
+      username: user
+      password: password
+      database: auth_db
+
+primary:
+  persistence:
+    enabled: false # Ephemeral for local dev

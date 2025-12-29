@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-api
+  labels:
+    app: {{ .Chart.Name }}
+    component: api
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+      component: api
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        component: api
+    spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z postgres-auth-postgresql 5432; do echo "Waiting for PostgreSQL..."; sleep 2; done']
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/app/auth-service"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: AUTH_DB_URL
+              value: {{ .Values.config.authDbUrl | quote }}
+            - name: AUTH_PRIVATE_KEY_PATH
+              value: "/app/keys/private.pem"
+            - name: AUTH_PUBLIC_KEY_PATH
+              value: "/app/keys/public.pem"
+          volumeMounts:
+            - name: keys
+              mountPath: "/app/keys"
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: keys
+          secret:
+            secretName: auth-keys
