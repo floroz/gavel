@@ -15,3 +15,12 @@ message BidPlaced {
   google.protobuf.Timestamp timestamp = 5; // When the bid was placed
 }
 
+// UserCreated event is published when a new user registers
+message UserCreated {
+  string user_id = 1;      // UUID of the user
+  string email = 2;        // User email
+  string full_name = 3;    // Full name
+  string country_code = 4; // ISO country code
+  google.protobuf.Timestamp created_at = 5; // When the user was created
+}
+
