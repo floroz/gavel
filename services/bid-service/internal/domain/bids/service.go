@@ -15,12 +15,16 @@ import (
 
 // Validation errors
 var (
-	ErrBidTooLow    = fmt.Errorf("bid amount must be higher than current highest bid")
-	ErrAuctionEnded = fmt.Errorf("auction has ended")
+	ErrBidTooLow        = fmt.Errorf("bid amount must be higher than current highest bid")
+	ErrAuctionEnded     = fmt.Errorf("auction has ended")
+	ErrInvalidBidAmount = fmt.Errorf("bid amount must be positive")
 )
 
 // validateBidAmount checks if the bid amount is higher than the current highest bid
 func validateBidAmount(bidAmount, currentHighest int64) error {
+	if bidAmount <= 0 {
+		return ErrInvalidBidAmount
+	}
 	if bidAmount <= currentHighest {
 		return ErrBidTooLow
 	}

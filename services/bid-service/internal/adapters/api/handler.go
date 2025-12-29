@@ -51,6 +51,9 @@ func (h *BidServiceHandler) PlaceBid(
 		if errors.Is(err, bids.ErrBidTooLow) || errors.Is(err, bids.ErrAuctionEnded) {
 			return nil, connect.NewError(connect.CodeFailedPrecondition, err)
 		}
+		if errors.Is(err, bids.ErrInvalidBidAmount) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 		// Check for "item not found" wrapped error
 		// Since we wrap it with fmt.Errorf("item not found: %w", err), checking string or unwrapping is needed.
 		// A cleaner way is to have a typed error for ItemNotFound in the domain.

@@ -119,6 +119,52 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 		assert.Equal(t, connect.CodeFailedPrecondition, connect.CodeOf(err))
 	})
 
+	t.Run("Failure_NegativeAmount", func(t *testing.T) {
+		itemID := uuid.New()
+		testItem := &items.Item{
+			ID:                itemID,
+			Title:             "Item for Negative Bid",
+			StartPrice:        1000,
+			CurrentHighestBid: 1000,
+			EndAt:             time.Now().Add(1 * time.Hour),
+			CreatedAt:         time.Now(),
+			UpdatedAt:         time.Now(),
+		}
+		seedTestItem(t, pool, testItem)
+
+		req := connect.NewRequest(&bidsv1.PlaceBidRequest{
+			ItemId: itemID.String(),
+			UserId: uuid.New().String(),
+			Amount: -100,
+		})
+		_, err := client.PlaceBid(context.Background(), req)
+		require.Error(t, err)
+		assert.Equal(t, connect.CodeInvalidArgument, connect.CodeOf(err))
+	})
+
+	t.Run("Failure_ZeroAmount", func(t *testing.T) {
+		itemID := uuid.New()
+		testItem := &items.Item{
+			ID:                itemID,
+			Title:             "Item for Zero Bid",
+			StartPrice:        1000,
+			CurrentHighestBid: 1000,
+			EndAt:             time.Now().Add(1 * time.Hour),
+			CreatedAt:         time.Now(),
+			UpdatedAt:         time.Now(),
+		}
+		seedTestItem(t, pool, testItem)
+
+		req := connect.NewRequest(&bidsv1.PlaceBidRequest{
+			ItemId: itemID.String(),
+			UserId: uuid.New().String(),
+			Amount: 0,
+		})
+		_, err := client.PlaceBid(context.Background(), req)
+		require.Error(t, err)
+		assert.Equal(t, connect.CodeInvalidArgument, connect.CodeOf(err))
+	})
+
 	t.Run("Concurrency_Atomicity", func(t *testing.T) {
 		// Simulating multiple users bidding on the same item rapidly
 		itemID := uuid.New()
