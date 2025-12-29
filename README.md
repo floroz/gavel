@@ -144,3 +144,24 @@ Run the verification script to check service health:
 | `make proto-gen-ts` | Generate TypeScript clients |
 | `make lint` | Run linters |
 | `make test` | Run full test suite |
+
+
+## 🧪 Testing Strategy
+
+Gavel prioritizes **real-world reliability** over theoretical unit coverage. Our testing philosophy is built on three pillars:
+
+*   **Integration-First**: We prefer testing components against real infrastructure (Postgres, RabbitMQ) rather than using mocks. This ensures that our SQL queries, transaction boundaries, and message delivery logic are actually correct.
+*   **Testcontainers**: We use [Testcontainers-go](https://golang.testcontainers.org/) to spin up ephemeral, production-identical instances of our dependencies for every test suite.
+*   **No Mocks Policy**: We discourage the use of mock frameworks (like `gomock` or `testify/mock`) for infrastructure layers. If you need to test a repository, test it against a real database.
+
+### Running Tests
+
+Integration tests are separated using the `integration` build tag to keep the development loop fast.
+
+| Command | Action |
+|:---|:---|
+| `make test-unit` | Run unit tests (no external dependencies) |
+| `make test-integration` | Run integration tests (requires Docker) |
+| `make test` | Run the full test suite |
+
+---
