@@ -32,9 +32,12 @@ The system leverages a decoupled **Ports & Adapters (Hexagonal)** architecture, 
 
 ```mermaid
 graph TD
-    User((User)) -->|Browser| Frontend[React Frontend]
-    Frontend -->|JSON/ConnectRPC| Ingress{NGINX Ingress}
-    
+    User((User)) -->|Browser| Ingress{NGINX Ingress}
+    Ingress -->|app.gavel.local| Frontend[React Frontend (SSR Node/Nitro)]
+    Ingress -->|api.gavel.local/auth.v1...| AuthAPI
+    Ingress -- "Bearer JWT (Claims)" --> BidAPI
+    Ingress -- "Bearer JWT (Claims)" --> StatsAPI
+
     subgraph "Kubernetes Cluster"
         %% Shared Infrastructure
         RMQ(RabbitMQ)
@@ -75,7 +78,7 @@ graph TD
 
 ## 🛠 Tech Stack & Patterns
 
--   **Frontend**: [React 19, TanStack Start, Tailwind, Shadcn](frontend/README.md)
+-   **Frontend**: [React 19, TanStack Start, Nitro (SSR), Tailwind, Shadcn](frontend/README.md)
 -   **Language**: Go 1.25+ (Generics, Context-driven)
 -   **Orchestration**: Kubernetes (Kind), Helm, Tilt, ctlptl
 -   **Database**: PostgreSQL (Raw `pgx` for maximum control over transactions)
@@ -95,7 +98,7 @@ We use **ConnectRPC** for the service-to-frontend API. This provides a "best of 
 
 ### Testing Endpoints (JSON)
 
-**Prerequisite**: Add `127.0.0.1 api.gavel.local` to your `/etc/hosts` file.
+**Prerequisite**: Add `127.0.0.1 api.gavel.local app.gavel.local` to your `/etc/hosts` file.
 
 **Place Bid** (Write)
 ```bash
@@ -136,7 +139,7 @@ We use `ctlptl` for declarative cluster management. This creates a Kind cluster 
 make cluster
 ```
 
-**Important**: Ensure you have `127.0.0.1 api.gavel.local` in your `/etc/hosts`.
+**Important**: Ensure you have `127.0.0.1 api.gavel.local app.gavel.local` in your `/etc/hosts`.
 
 ### 2. Start Backend Environment
 Run the backend stack (Infrastructure + Services) with Tilt. This will build images, apply Helm charts, and stream logs:
@@ -146,14 +149,11 @@ make dev
 *   Press `Space` to open the Tilt UI
 *   Services are accessible at `http://api.gavel.local`
 
-### 3. Start Frontend
-In a new terminal window, start the frontend application:
-```bash
-cd frontend
-pnpm install
-pnpm dev
-```
-*   The frontend will be accessible at `http://localhost:3000`
+### 3. Access Frontend
+The frontend application is deployed to the cluster and accessible via Ingress.
+*   Open `http://app.gavel.local`
+
+*(Optional)* For UI-only development with faster hot-reload, you can run `pnpm dev` locally in the `frontend/` directory (listening on localhost:3000), but `app.gavel.local` serves the full SSR experience from the cluster.
 
 ### 4. Verify Deployment
 Run the verification script to check service health:
