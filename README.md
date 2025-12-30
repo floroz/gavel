@@ -1,6 +1,8 @@
 # 🔨 Gavel: High-Performance Real-Time Auction System
 
 [![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat-square&logo=go)](https://go.dev/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)](https://react.dev/)
+[![TanStack](https://img.shields.io/badge/TanStack-Start-FF4154?style=flat-square)](https://tanstack.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-Latest-326CE5?style=flat-square&logo=kubernetes)](https://kubernetes.io/)
 [![Tilt](https://img.shields.io/badge/Tilt-Dev_Env-23C6C8?style=flat-square&logo=tilt)](https://tilt.dev/)
 [![Postgres](https://img.shields.io/badge/Postgres-16-336791?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
@@ -30,7 +32,8 @@ The system leverages a decoupled **Ports & Adapters (Hexagonal)** architecture, 
 
 ```mermaid
 graph TD
-    User((User)) -->|JSON/ConnectRPC| Ingress{NGINX Ingress}
+    User((User)) -->|Browser| Frontend[React Frontend]
+    Frontend -->|JSON/ConnectRPC| Ingress{NGINX Ingress}
     
     subgraph "Kubernetes Cluster"
         %% Shared Infrastructure
@@ -53,7 +56,7 @@ graph TD
         end
 
         %% Routing
-        Ingress -->|api.auction.local/auth.v1...| AuthAPI
+        Ingress -->|api.gavel.local/auth.v1...| AuthAPI
         Ingress -- "Bearer JWT (Claims)" --> BidAPI
         Ingress -- "Bearer JWT (Claims)" --> StatsAPI
 
@@ -72,6 +75,7 @@ graph TD
 
 ## 🛠 Tech Stack & Patterns
 
+-   **Frontend**: [React 19, TanStack Start, Tailwind, Shadcn](frontend/README.md)
 -   **Language**: Go 1.25+ (Generics, Context-driven)
 -   **Orchestration**: Kubernetes (Kind), Helm, Tilt, ctlptl
 -   **Database**: PostgreSQL (Raw `pgx` for maximum control over transactions)
@@ -91,20 +95,20 @@ We use **ConnectRPC** for the service-to-frontend API. This provides a "best of 
 
 ### Testing Endpoints (JSON)
 
-**Prerequisite**: Add `127.0.0.1 api.auction.local` to your `/etc/hosts` file.
+**Prerequisite**: Add `127.0.0.1 api.gavel.local` to your `/etc/hosts` file.
 
 **Place Bid** (Write)
 ```bash
 curl -X POST -H "Content-Type: application/json" \
   -d '{"item_id": "uuid", "user_id": "uuid", "amount": 15000}' \
-  http://api.auction.local/bids.v1.BidService/PlaceBid
+  http://api.gavel.local/bids.v1.BidService/PlaceBid
 ```
 
 **Get User Stats** (Read)
 ```bash
 curl -X POST -H "Content-Type: application/json" \
   -d '{"user_id": "uuid"}' \
-  http://api.auction.local/userstats.v1.UserStatsService/GetUserStats
+  http://api.gavel.local/userstats.v1.UserStatsService/GetUserStats
 ```
 
 ---
@@ -118,6 +122,12 @@ curl -X POST -H "Content-Type: application/json" \
 *   Helm (`brew install helm`)
 *   ctlptl (`brew install ctlptl`)
 *   kubectl
+*   Node.js & PNPM (via fnm: `brew install fnm`)
+    ```bash
+    cd ./<project-folder> # cd to the project root folder
+    fnm use # this should automatically pick the correct node version from .nvmrc
+    npm install -g pnpm@10.26
+    ```
 
 ### 1. Setup Local Cluster
 We use `ctlptl` for declarative cluster management. This creates a Kind cluster and a local container registry.
@@ -126,17 +136,26 @@ We use `ctlptl` for declarative cluster management. This creates a Kind cluster 
 make cluster
 ```
 
-**Important**: Ensure you have `127.0.0.1 api.auction.local` in your `/etc/hosts`.
+**Important**: Ensure you have `127.0.0.1 api.gavel.local` in your `/etc/hosts`.
 
-### 2. Start Development Environment
-Run the entire stack (Infrastructure + Services) with Tilt. This will build images, apply Helm charts, and stream logs:
+### 2. Start Backend Environment
+Run the backend stack (Infrastructure + Services) with Tilt. This will build images, apply Helm charts, and stream logs:
 ```bash
 make dev
 ```
 *   Press `Space` to open the Tilt UI
-*   Services are accessible at `http://api.auction.local`
+*   Services are accessible at `http://api.gavel.local`
 
-### 3. Verify Deployment
+### 3. Start Frontend
+In a new terminal window, start the frontend application:
+```bash
+cd frontend
+pnpm install
+pnpm dev
+```
+*   The frontend will be accessible at `http://localhost:3000`
+
+### 4. Verify Deployment
 Run the verification script to check service health:
 ```bash
 ./scripts/verify-deployment.sh

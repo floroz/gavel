@@ -1,0 +1,15 @@
+---
+alwaysApply: false
+always_on: true
+trigger: always_on
+applyTo: "**"
+description: Instruction to trigger when creating new components
+---
+
+# shadcn instructions
+
+Use the latest version of Shadcn to install new components, like this command to add a button component:
+
+```bash
+pnpm dlx shadcn@latest add button
+```

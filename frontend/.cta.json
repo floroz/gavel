@@ -1,0 +1,23 @@
+{
+  "projectName": "frontend",
+  "mode": "file-router",
+  "typescript": true,
+  "tailwind": true,
+  "packageManager": "npm",
+  "addOnOptions": {},
+  "git": true,
+  "version": 1,
+  "framework": "react-cra",
+  "chosenAddOns": [
+    "eslint",
+    "compiler",
+    "form",
+    "shadcn",
+    "t3env",
+    "table",
+    "start",
+    "store",
+    "storybook",
+    "tanstack-query"
+  ]
+}
