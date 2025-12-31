@@ -7,6 +7,8 @@ ingress:
   enabled: true
   className: nginx
   host: api.gavel.local
+  cors:
+    allowOrigin: "http://app.gavel.local"
 
 config:
   authDbUrl: "postgres://user:password@postgres-auth-postgresql:5432/auth_db?sslmode=disable"
