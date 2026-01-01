@@ -9,10 +9,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/floroz/gavel/services/auth-service/internal/domain/users"
+	pkgevents "github.com/floroz/gavel/pkg/events"
 )
 
-// PostgresOutboxRepository implements users.OutboxRepository
+// PostgresOutboxRepository implements pkgevents.OutboxRepository
 type PostgresOutboxRepository struct {
 	pool *pgxpool.Pool
 }
@@ -21,7 +21,8 @@ func NewPostgresOutboxRepository(pool *pgxpool.Pool) *PostgresOutboxRepository {
 	return &PostgresOutboxRepository{pool: pool}
 }
 
-func (r *PostgresOutboxRepository) CreateEvent(ctx context.Context, tx pgx.Tx, event *users.OutboxEvent) error {
+// CreateEvent persists an event to the outbox table in the same transaction as the business logic
+func (r *PostgresOutboxRepository) CreateEvent(ctx context.Context, tx pgx.Tx, event *pkgevents.OutboxEvent) error {
 	query := `
 		INSERT INTO outbox_events (id, event_type, payload, status, created_at)
 		VALUES ($1, $2, $3, $4::outbox_status, $5)
@@ -39,7 +40,7 @@ func (r *PostgresOutboxRepository) CreateEvent(ctx context.Context, tx pgx.Tx, e
 	return nil
 }
 
-func (r *PostgresOutboxRepository) GetPendingEvents(ctx context.Context, tx pgx.Tx, limit int) ([]*users.OutboxEvent, error) {
+func (r *PostgresOutboxRepository) GetPendingEvents(ctx context.Context, tx pgx.Tx, limit int) ([]*pkgevents.OutboxEvent, error) {
 	query := `
 		SELECT id, event_type, payload, status, created_at, processed_at
 		FROM outbox_events
@@ -54,9 +55,9 @@ func (r *PostgresOutboxRepository) GetPendingEvents(ctx context.Context, tx pgx.
 	}
 	defer rows.Close()
 
-	var events []*users.OutboxEvent
+	var events []*pkgevents.OutboxEvent
 	for rows.Next() {
-		var event users.OutboxEvent
+		var event pkgevents.OutboxEvent
 		if err := rows.Scan(
 			&event.ID,
 			&event.EventType,
@@ -72,7 +73,7 @@ func (r *PostgresOutboxRepository) GetPendingEvents(ctx context.Context, tx pgx.
 	return events, nil
 }
 
-func (r *PostgresOutboxRepository) UpdateEventStatus(ctx context.Context, tx pgx.Tx, id uuid.UUID, status users.OutboxStatus) error {
+func (r *PostgresOutboxRepository) UpdateEventStatus(ctx context.Context, tx pgx.Tx, id uuid.UUID, status pkgevents.OutboxStatus) error {
 	query := `
 		UPDATE outbox_events
 		SET status = $1::outbox_status, processed_at = $2

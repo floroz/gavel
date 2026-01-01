@@ -15,6 +15,7 @@ import (
 	"golang.org/x/net/http2/h2c"
 
 	pkgdb "github.com/floroz/gavel/pkg/database"
+	pkgevents "github.com/floroz/gavel/pkg/events"
 	"github.com/floroz/gavel/pkg/proto/bids/v1/bidsv1connect"
 	"github.com/floroz/gavel/services/bid-service/internal/adapters/api"
 	"github.com/floroz/gavel/services/bid-service/internal/adapters/database"
@@ -61,15 +62,25 @@ func main() {
 
 	// 2. Check RabbitMQ (Optional for API, but good for health)
 	rabbitURL := os.Getenv("RABBITMQ_URL")
-	if rabbitURL != "" {
-		mq, err := amqp091.Dial(rabbitURL)
-		if err != nil {
-			logger.Warn("RabbitMQ connection failed (API might still work)", "error", err)
-		} else {
-			defer mq.Close()
-			logger.Info("RabbitMQ Connected")
-		}
+	if rabbitURL == "" {
+		logger.Error("RABBITMQ_URL is not set")
+		os.Exit(1)
 	}
+
+	amqpConn, err := amqp091.Dial(rabbitURL)
+	if err != nil {
+		logger.Error("Failed to connect to RabbitMQ", "error", err)
+		os.Exit(1)
+	}
+	defer amqpConn.Close()
+	logger.Info("RabbitMQ Connected")
+
+	rabbitPublisher, err := pkgevents.NewRabbitMQPublisher(amqpConn)
+	if err != nil {
+		logger.Error("Failed to create RabbitMQ publisher", "error", err)
+		os.Exit(1)
+	}
+	defer rabbitPublisher.Close()
 
 	// 3. Check Redis (Optional for API, but good for health)
 	redisURL := os.Getenv("REDIS_URL")
@@ -94,6 +105,25 @@ func main() {
 	// 6. Initialize API Handler (ConnectRPC)
 	bidHandler := api.NewBidServiceHandler(auctionService)
 	path, handler := bidsv1connect.NewBidServiceHandler(bidHandler)
+
+	// 7. Start Outbox Relay
+	outboxRelay := pkgevents.NewOutboxRelay(
+		outboxRepo,
+		rabbitPublisher,
+		txManager,
+		10,               // batch size
+		1*time.Second,    // interval
+		"auction.events", // exchange
+		logger,
+	)
+
+	// Run relay in background
+	go func() {
+		logger.Info("Starting Outbox Relay...")
+		if err := outboxRelay.Run(ctx); err != nil {
+			logger.Error("Outbox Relay stopped", "error", err)
+		}
+	}()
 
 	mux := http.NewServeMux()
 	mux.Handle(path, handler)

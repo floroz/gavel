@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/floroz/gavel/services/bid-service/internal/domain/bids"
+	pkgevents "github.com/floroz/gavel/pkg/events"
 )
 
 // PostgresOutboxRepository implements bids.OutboxRepository using pgx
@@ -23,7 +23,7 @@ func NewPostgresOutboxRepository(pool *pgxpool.Pool) *PostgresOutboxRepository {
 }
 
 // SaveEvent saves an outbox event within a transaction
-func (r *PostgresOutboxRepository) SaveEvent(ctx context.Context, tx pgx.Tx, event *bids.OutboxEvent) error {
+func (r *PostgresOutboxRepository) SaveEvent(ctx context.Context, tx pgx.Tx, event *pkgevents.OutboxEvent) error {
 	query := `
 		INSERT INTO outbox_events (id, event_type, payload, status, created_at)
 		VALUES ($1, $2, $3, $4::outbox_status, $5)
@@ -43,7 +43,7 @@ func (r *PostgresOutboxRepository) SaveEvent(ctx context.Context, tx pgx.Tx, eve
 
 // GetPendingEvents retrieves pending events for processing
 // Uses SELECT FOR UPDATE SKIP LOCKED to prevent multiple workers from processing the same event
-func (r *PostgresOutboxRepository) GetPendingEvents(ctx context.Context, tx pgx.Tx, limit int) ([]*bids.OutboxEvent, error) {
+func (r *PostgresOutboxRepository) GetPendingEvents(ctx context.Context, tx pgx.Tx, limit int) ([]*pkgevents.OutboxEvent, error) {
 	query := `
 		SELECT id, event_type, payload, status, created_at, processed_at
 		FROM outbox_events
@@ -53,41 +53,32 @@ func (r *PostgresOutboxRepository) GetPendingEvents(ctx context.Context, tx pgx.
 		FOR UPDATE SKIP LOCKED
 	`
 
-	rows, err := tx.Query(ctx, query, bids.OutboxStatusPending, limit)
+	rows, err := tx.Query(ctx, query, pkgevents.OutboxStatusPending, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query pending events: %w", err)
 	}
 	defer rows.Close()
 
-	var events []*bids.OutboxEvent
+	var events []*pkgevents.OutboxEvent
 	for rows.Next() {
-		var event bids.OutboxEvent
-		var processedAt *time.Time
-
+		var event pkgevents.OutboxEvent
 		if err := rows.Scan(
 			&event.ID,
 			&event.EventType,
 			&event.Payload,
 			&event.Status,
 			&event.CreatedAt,
-			&processedAt,
+			&event.ProcessedAt,
 		); err != nil {
 			return nil, fmt.Errorf("failed to scan event: %w", err)
 		}
-
-		event.ProcessedAt = processedAt
 		events = append(events, &event)
 	}
-
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating events: %w", err)
-	}
-
 	return events, nil
 }
 
 // UpdateEventStatus updates the status of an event
-func (r *PostgresOutboxRepository) UpdateEventStatus(ctx context.Context, tx pgx.Tx, eventID uuid.UUID, status bids.OutboxStatus) error {
+func (r *PostgresOutboxRepository) UpdateEventStatus(ctx context.Context, tx pgx.Tx, eventID uuid.UUID, status pkgevents.OutboxStatus) error {
 	query := `
 		UPDATE outbox_events
 		SET status = $1::outbox_status, processed_at = $2
@@ -95,7 +86,7 @@ func (r *PostgresOutboxRepository) UpdateEventStatus(ctx context.Context, tx pgx
 	`
 
 	var processedAt *time.Time
-	if status == bids.OutboxStatusPublished || status == bids.OutboxStatusFailed {
+	if status == pkgevents.OutboxStatusPublished || status == pkgevents.OutboxStatusFailed {
 		now := time.Now()
 		processedAt = &now
 	}

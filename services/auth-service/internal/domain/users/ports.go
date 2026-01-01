@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 
+	"github.com/floroz/gavel/pkg/events"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -22,9 +23,8 @@ type TokenRepository interface {
 }
 
 type OutboxRepository interface {
-	CreateEvent(ctx context.Context, tx pgx.Tx, event *OutboxEvent) error
-	GetPendingEvents(ctx context.Context, tx pgx.Tx, limit int) ([]*OutboxEvent, error)
-	UpdateEventStatus(ctx context.Context, tx pgx.Tx, id uuid.UUID, status OutboxStatus) error
+	CreateEvent(ctx context.Context, tx pgx.Tx, event *events.OutboxEvent) error
+	events.OutboxRepository
 }
 
 type EventPublisher interface {

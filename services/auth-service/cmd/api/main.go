@@ -19,7 +19,7 @@ import (
 	"github.com/floroz/gavel/pkg/proto/auth/v1/authv1connect"
 	"github.com/floroz/gavel/services/auth-service/internal/adapters/api"
 	"github.com/floroz/gavel/services/auth-service/internal/adapters/database"
-	authEvents "github.com/floroz/gavel/services/auth-service/internal/adapters/events"
+
 	"github.com/floroz/gavel/services/auth-service/internal/domain/users"
 )
 
@@ -118,12 +118,13 @@ func main() {
 	authService := users.NewService(userRepo, tokenRepo, outboxRepo, signer, txManager)
 
 	// 6. Start Outbox Relay
-	outboxRelay := authEvents.NewOutboxRelay(
+	outboxRelay := pkgevents.NewOutboxRelay(
 		outboxRepo,
 		rabbitPublisher,
 		txManager,
-		10,            // batch size
-		5*time.Second, // interval
+		10,               // batch size
+		5*time.Second,    // interval
+		"auction.events", // exchange
 		logger,
 	)
 
@@ -137,10 +138,10 @@ func main() {
 
 	// 7. Initialize API Handler (ConnectRPC)
 	authHandler := api.NewAuthServiceHandler(authService)
-	path, handler := authv1connect.NewAuthServiceHandler(authHandler)
+	path, connectHandler := authv1connect.NewAuthServiceHandler(authHandler)
 
 	mux := http.NewServeMux()
-	mux.Handle(path, handler)
+	mux.Handle(path, connectHandler)
 
 	// Health check
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

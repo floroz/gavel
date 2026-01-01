@@ -14,6 +14,7 @@ import (
 
 	"github.com/floroz/gavel/pkg/auth"
 	"github.com/floroz/gavel/pkg/database"
+	"github.com/floroz/gavel/pkg/events"
 	pb "github.com/floroz/gavel/pkg/proto"
 )
 
@@ -106,11 +107,11 @@ func (s *Service) Register(ctx context.Context, email, password, fullName, phone
 		return nil, fmt.Errorf("failed to marshal event: %w", err)
 	}
 
-	outboxEvent := &OutboxEvent{
+	outboxEvent := &events.OutboxEvent{
 		ID:        uuid.New(),
 		EventType: "user.created",
 		Payload:   payload,
-		Status:    OutboxStatusPending,
+		Status:    events.OutboxStatusPending,
 		CreatedAt: now,
 	}
 

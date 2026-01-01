@@ -16,7 +16,7 @@ import (
 
 // BidEventsProducer orchestrates the process of relaying bid events from the outbox to RabbitMQ
 type BidEventsProducer struct {
-	relay     *OutboxRelay
+	relay     *pkgevents.OutboxRelay
 	publisher *pkgevents.RabbitMQPublisher
 }
 
@@ -30,12 +30,13 @@ func NewBidEventsProducer(pool *pgxpool.Pool, conn *amqp.Connection, logger *slo
 	txManager := pkgdb.NewPostgresTransactionManager(pool, 3*time.Second)
 	outboxRepo := database.NewPostgresOutboxRepository(pool)
 
-	relay := NewOutboxRelay(
+	relay := pkgevents.NewOutboxRelay(
 		outboxRepo,
 		publisher,
 		txManager,
 		10,                   // Batch size
 		500*time.Millisecond, // Polling interval
+		"auction.events",     // exchange
 		logger,
 	)
 

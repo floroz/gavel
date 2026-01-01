@@ -10,8 +10,15 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/floroz/gavel/pkg/database"
+	"github.com/floroz/gavel/pkg/events"
 	pb "github.com/floroz/gavel/pkg/proto"
 )
+
+type PlaceBidCommand struct {
+	ItemID uuid.UUID
+	UserID uuid.UUID
+	Amount int64
+}
 
 // Validation errors
 var (
@@ -124,11 +131,11 @@ func (s *AuctionService) PlaceBid(ctx context.Context, cmd PlaceBidCommand) (*Bi
 	}
 
 	// Step 4: Save the event to the outbox (in the same transaction)
-	outboxEvent := &OutboxEvent{
+	outboxEvent := &events.OutboxEvent{
 		ID:        uuid.New(),
-		EventType: EventTypeBidPlaced,
+		EventType: "bid.placed",
 		Payload:   payload,
-		Status:    OutboxStatusPending,
+		Status:    events.OutboxStatusPending,
 		CreatedAt: time.Now(),
 	}
 

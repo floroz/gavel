@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
+	"github.com/floroz/gavel/pkg/events"
 	"github.com/floroz/gavel/services/bid-service/internal/domain/items"
 )
 
@@ -23,15 +24,8 @@ type BidRepository interface {
 
 // OutboxRepository defines the interface for outbox event persistence
 type OutboxRepository interface {
-	// SaveEvent saves an outbox event within a transaction
-	SaveEvent(ctx context.Context, tx pgx.Tx, event *OutboxEvent) error
-
-	// GetPendingEvents retrieves pending events for processing
-	// Uses SELECT FOR UPDATE SKIP LOCKED to prevent race conditions
-	GetPendingEvents(ctx context.Context, tx pgx.Tx, limit int) ([]*OutboxEvent, error)
-
-	// UpdateEventStatus updates the status of an event
-	UpdateEventStatus(ctx context.Context, tx pgx.Tx, eventID uuid.UUID, status OutboxStatus) error
+	events.OutboxRepository
+	SaveEvent(ctx context.Context, tx pgx.Tx, event *events.OutboxEvent) error
 }
 
 // ItemRepository defines the interface for item persistence

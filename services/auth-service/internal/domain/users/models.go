@@ -27,21 +27,3 @@ type RefreshToken struct {
 	UserAgent string    `db:"user_agent"`
 	IPAddress string    `db:"ip_address"`
 }
-
-type OutboxStatus string
-
-const (
-	OutboxStatusPending    OutboxStatus = "pending"
-	OutboxStatusProcessing OutboxStatus = "processing"
-	OutboxStatusPublished  OutboxStatus = "published"
-	OutboxStatusFailed     OutboxStatus = "failed"
-)
-
-type OutboxEvent struct {
-	ID          uuid.UUID    `db:"id"`
-	EventType   string       `db:"event_type"`
-	Payload     []byte       `db:"payload"`
-	Status      OutboxStatus `db:"status"`
-	CreatedAt   time.Time    `db:"created_at"`
-	ProcessedAt *time.Time   `db:"processed_at"`
-}
