@@ -8,7 +8,9 @@ ingress:
   className: nginx
   host: api.gavel.local
   cors:
-    allowOrigin: "http://app.gavel.local"
+    # DEV ONLY: Allow all origins for local development.
+    # In production (values-prod.yaml), set this to the actual domain (e.g. "https://app.gavel.com")
+    allowOrigin: "*"
 
 config:
   bidDbUrl: "postgres://user:password@postgres-bids-postgresql:5432/bid_db?sslmode=disable"
