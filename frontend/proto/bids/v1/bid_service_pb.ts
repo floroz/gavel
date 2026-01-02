@@ -2,98 +2,112 @@
 // @generated from file bids/v1/bid_service.proto (package bids.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Message } from "@bufbuild/protobuf";
+import type {
+  GenFile,
+  GenMessage,
+  GenService,
+} from '@bufbuild/protobuf/codegenv2'
+import {
+  fileDesc,
+  messageDesc,
+  serviceDesc,
+} from '@bufbuild/protobuf/codegenv2'
+import type { Message } from '@bufbuild/protobuf'
 
 /**
  * Describes the file bids/v1/bid_service.proto.
  */
-export const file_bids_v1_bid_service: GenFile = /*@__PURE__*/
-  fileDesc("ChliaWRzL3YxL2JpZF9zZXJ2aWNlLnByb3RvEgdiaWRzLnYxIkMKD1BsYWNlQmlkUmVxdWVzdBIPCgdpdGVtX2lkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSDgoGYW1vdW50GAMgASgDIi0KEFBsYWNlQmlkUmVzcG9uc2USGQoDYmlkGAEgASgLMgwuYmlkcy52MS5CaWQiVwoDQmlkEgoKAmlkGAEgASgJEg8KB2l0ZW1faWQYAiABKAkSDwoHdXNlcl9pZBgDIAEoCRIOCgZhbW91bnQYBCABKAMSEgoKY3JlYXRlZF9hdBgFIAEoCTJNCgpCaWRTZXJ2aWNlEj8KCFBsYWNlQmlkEhguYmlkcy52MS5QbGFjZUJpZFJlcXVlc3QaGS5iaWRzLnYxLlBsYWNlQmlkUmVzcG9uc2VCMlowZ2l0aHViLmNvbS9mbG9yb3ovZ2F2ZWwvcGtnL3Byb3RvL2JpZHMvdjE7Ymlkc3YxYgZwcm90bzM");
+export const file_bids_v1_bid_service: GenFile =
+  /*@__PURE__*/
+  fileDesc(
+    'ChliaWRzL3YxL2JpZF9zZXJ2aWNlLnByb3RvEgdiaWRzLnYxIkMKD1BsYWNlQmlkUmVxdWVzdBIPCgdpdGVtX2lkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSDgoGYW1vdW50GAMgASgDIi0KEFBsYWNlQmlkUmVzcG9uc2USGQoDYmlkGAEgASgLMgwuYmlkcy52MS5CaWQiVwoDQmlkEgoKAmlkGAEgASgJEg8KB2l0ZW1faWQYAiABKAkSDwoHdXNlcl9pZBgDIAEoCRIOCgZhbW91bnQYBCABKAMSEgoKY3JlYXRlZF9hdBgFIAEoCTJNCgpCaWRTZXJ2aWNlEj8KCFBsYWNlQmlkEhguYmlkcy52MS5QbGFjZUJpZFJlcXVlc3QaGS5iaWRzLnYxLlBsYWNlQmlkUmVzcG9uc2VCMlowZ2l0aHViLmNvbS9mbG9yb3ovZ2F2ZWwvcGtnL3Byb3RvL2JpZHMvdjE7Ymlkc3YxYgZwcm90bzM',
+  )
 
 /**
  * @generated from message bids.v1.PlaceBidRequest
  */
-export type PlaceBidRequest = Message<"bids.v1.PlaceBidRequest"> & {
+export type PlaceBidRequest = Message<'bids.v1.PlaceBidRequest'> & {
   /**
    * @generated from field: string item_id = 1;
    */
-  itemId: string;
+  itemId: string
 
   /**
    * @generated from field: string user_id = 2;
    */
-  userId: string;
+  userId: string
 
   /**
    * @generated from field: int64 amount = 3;
    */
-  amount: bigint;
-};
+  amount: bigint
+}
 
 /**
  * Describes the message bids.v1.PlaceBidRequest.
  * Use `create(PlaceBidRequestSchema)` to create a new message.
  */
-export const PlaceBidRequestSchema: GenMessage<PlaceBidRequest> = /*@__PURE__*/
-  messageDesc(file_bids_v1_bid_service, 0);
+export const PlaceBidRequestSchema: GenMessage<PlaceBidRequest> =
+  /*@__PURE__*/
+  messageDesc(file_bids_v1_bid_service, 0)
 
 /**
  * @generated from message bids.v1.PlaceBidResponse
  */
-export type PlaceBidResponse = Message<"bids.v1.PlaceBidResponse"> & {
+export type PlaceBidResponse = Message<'bids.v1.PlaceBidResponse'> & {
   /**
    * @generated from field: bids.v1.Bid bid = 1;
    */
-  bid?: Bid;
-};
+  bid?: Bid
+}
 
 /**
  * Describes the message bids.v1.PlaceBidResponse.
  * Use `create(PlaceBidResponseSchema)` to create a new message.
  */
-export const PlaceBidResponseSchema: GenMessage<PlaceBidResponse> = /*@__PURE__*/
-  messageDesc(file_bids_v1_bid_service, 1);
+export const PlaceBidResponseSchema: GenMessage<PlaceBidResponse> =
+  /*@__PURE__*/
+  messageDesc(file_bids_v1_bid_service, 1)
 
 /**
  * @generated from message bids.v1.Bid
  */
-export type Bid = Message<"bids.v1.Bid"> & {
+export type Bid = Message<'bids.v1.Bid'> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string;
+  id: string
 
   /**
    * @generated from field: string item_id = 2;
    */
-  itemId: string;
+  itemId: string
 
   /**
    * @generated from field: string user_id = 3;
    */
-  userId: string;
+  userId: string
 
   /**
    * @generated from field: int64 amount = 4;
    */
-  amount: bigint;
+  amount: bigint
 
   /**
    * ISO 8601 string
    *
    * @generated from field: string created_at = 5;
    */
-  createdAt: string;
-};
+  createdAt: string
+}
 
 /**
  * Describes the message bids.v1.Bid.
  * Use `create(BidSchema)` to create a new message.
  */
-export const BidSchema: GenMessage<Bid> = /*@__PURE__*/
-  messageDesc(file_bids_v1_bid_service, 2);
+export const BidSchema: GenMessage<Bid> =
+  /*@__PURE__*/
+  messageDesc(file_bids_v1_bid_service, 2)
 
 /**
  * @generated from service bids.v1.BidService
@@ -103,10 +117,8 @@ export const BidService: GenService<{
    * @generated from rpc bids.v1.BidService.PlaceBid
    */
   placeBid: {
-    methodKind: "unary";
-    input: typeof PlaceBidRequestSchema;
-    output: typeof PlaceBidResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_bids_v1_bid_service, 0);
-
+    methodKind: 'unary'
+    input: typeof PlaceBidRequestSchema
+    output: typeof PlaceBidResponseSchema
+  }
+}> = /*@__PURE__*/ serviceDesc(file_bids_v1_bid_service, 0)

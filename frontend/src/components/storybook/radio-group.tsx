@@ -8,7 +8,7 @@ export interface RadioOption {
 export interface RadioGroupProps {
   label: string
   name: string
-  options: RadioOption[]
+  options: Array<RadioOption>
   value?: string
   onChange?: (value: string) => void
   className?: string

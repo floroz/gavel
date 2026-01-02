@@ -2,85 +2,100 @@
 // @generated from file userstats/v1/user_stats_service.proto (package userstats.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Message } from "@bufbuild/protobuf";
+import type {
+  GenFile,
+  GenMessage,
+  GenService,
+} from '@bufbuild/protobuf/codegenv2'
+import {
+  fileDesc,
+  messageDesc,
+  serviceDesc,
+} from '@bufbuild/protobuf/codegenv2'
+import type { Message } from '@bufbuild/protobuf'
 
 /**
  * Describes the file userstats/v1/user_stats_service.proto.
  */
-export const file_userstats_v1_user_stats_service: GenFile = /*@__PURE__*/
-  fileDesc("CiV1c2Vyc3RhdHMvdjEvdXNlcl9zdGF0c19zZXJ2aWNlLnByb3RvEgx1c2Vyc3RhdHMudjEiJgoTR2V0VXNlclN0YXRzUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJIjsKEVVzZXJTdGF0c1Jlc3BvbnNlEiYKBXN0YXRzGAEgASgLMhcudXNlcnN0YXRzLnYxLlVzZXJTdGF0cyJfCglVc2VyU3RhdHMSDwoHdXNlcl9pZBgBIAEoCRISCgp0b3RhbF9iaWRzGAIgASgDEhQKDHRvdGFsX2Ftb3VudBgDIAEoAxIXCg9sYXN0X3VwZGF0ZWRfYXQYBCABKAkyZgoQVXNlclN0YXRzU2VydmljZRJSCgxHZXRVc2VyU3RhdHMSIS51c2Vyc3RhdHMudjEuR2V0VXNlclN0YXRzUmVxdWVzdBofLnVzZXJzdGF0cy52MS5Vc2VyU3RhdHNSZXNwb25zZUI8WjpnaXRodWIuY29tL2Zsb3Jvei9nYXZlbC9wa2cvcHJvdG8vdXNlcnN0YXRzL3YxO3VzZXJzdGF0c3YxYgZwcm90bzM");
+export const file_userstats_v1_user_stats_service: GenFile =
+  /*@__PURE__*/
+  fileDesc(
+    'CiV1c2Vyc3RhdHMvdjEvdXNlcl9zdGF0c19zZXJ2aWNlLnByb3RvEgx1c2Vyc3RhdHMudjEiJgoTR2V0VXNlclN0YXRzUmVxdWVzdBIPCgd1c2VyX2lkGAEgASgJIjsKEVVzZXJTdGF0c1Jlc3BvbnNlEiYKBXN0YXRzGAEgASgLMhcudXNlcnN0YXRzLnYxLlVzZXJTdGF0cyJfCglVc2VyU3RhdHMSDwoHdXNlcl9pZBgBIAEoCRISCgp0b3RhbF9iaWRzGAIgASgDEhQKDHRvdGFsX2Ftb3VudBgDIAEoAxIXCg9sYXN0X3VwZGF0ZWRfYXQYBCABKAkyZgoQVXNlclN0YXRzU2VydmljZRJSCgxHZXRVc2VyU3RhdHMSIS51c2Vyc3RhdHMudjEuR2V0VXNlclN0YXRzUmVxdWVzdBofLnVzZXJzdGF0cy52MS5Vc2VyU3RhdHNSZXNwb25zZUI8WjpnaXRodWIuY29tL2Zsb3Jvei9nYXZlbC9wa2cvcHJvdG8vdXNlcnN0YXRzL3YxO3VzZXJzdGF0c3YxYgZwcm90bzM',
+  )
 
 /**
  * @generated from message userstats.v1.GetUserStatsRequest
  */
-export type GetUserStatsRequest = Message<"userstats.v1.GetUserStatsRequest"> & {
-  /**
-   * @generated from field: string user_id = 1;
-   */
-  userId: string;
-};
+export type GetUserStatsRequest =
+  Message<'userstats.v1.GetUserStatsRequest'> & {
+    /**
+     * @generated from field: string user_id = 1;
+     */
+    userId: string
+  }
 
 /**
  * Describes the message userstats.v1.GetUserStatsRequest.
  * Use `create(GetUserStatsRequestSchema)` to create a new message.
  */
-export const GetUserStatsRequestSchema: GenMessage<GetUserStatsRequest> = /*@__PURE__*/
-  messageDesc(file_userstats_v1_user_stats_service, 0);
+export const GetUserStatsRequestSchema: GenMessage<GetUserStatsRequest> =
+  /*@__PURE__*/
+  messageDesc(file_userstats_v1_user_stats_service, 0)
 
 /**
  * @generated from message userstats.v1.UserStatsResponse
  */
-export type UserStatsResponse = Message<"userstats.v1.UserStatsResponse"> & {
+export type UserStatsResponse = Message<'userstats.v1.UserStatsResponse'> & {
   /**
    * @generated from field: userstats.v1.UserStats stats = 1;
    */
-  stats?: UserStats;
-};
+  stats?: UserStats
+}
 
 /**
  * Describes the message userstats.v1.UserStatsResponse.
  * Use `create(UserStatsResponseSchema)` to create a new message.
  */
-export const UserStatsResponseSchema: GenMessage<UserStatsResponse> = /*@__PURE__*/
-  messageDesc(file_userstats_v1_user_stats_service, 1);
+export const UserStatsResponseSchema: GenMessage<UserStatsResponse> =
+  /*@__PURE__*/
+  messageDesc(file_userstats_v1_user_stats_service, 1)
 
 /**
  * @generated from message userstats.v1.UserStats
  */
-export type UserStats = Message<"userstats.v1.UserStats"> & {
+export type UserStats = Message<'userstats.v1.UserStats'> & {
   /**
    * @generated from field: string user_id = 1;
    */
-  userId: string;
+  userId: string
 
   /**
    * @generated from field: int64 total_bids = 2;
    */
-  totalBids: bigint;
+  totalBids: bigint
 
   /**
    * Total value of bids placed
    *
    * @generated from field: int64 total_amount = 3;
    */
-  totalAmount: bigint;
+  totalAmount: bigint
 
   /**
    * ISO 8601 string
    *
    * @generated from field: string last_updated_at = 4;
    */
-  lastUpdatedAt: string;
-};
+  lastUpdatedAt: string
+}
 
 /**
  * Describes the message userstats.v1.UserStats.
  * Use `create(UserStatsSchema)` to create a new message.
  */
-export const UserStatsSchema: GenMessage<UserStats> = /*@__PURE__*/
-  messageDesc(file_userstats_v1_user_stats_service, 2);
+export const UserStatsSchema: GenMessage<UserStats> =
+  /*@__PURE__*/
+  messageDesc(file_userstats_v1_user_stats_service, 2)
 
 /**
  * @generated from service userstats.v1.UserStatsService
@@ -90,10 +105,8 @@ export const UserStatsService: GenService<{
    * @generated from rpc userstats.v1.UserStatsService.GetUserStats
    */
   getUserStats: {
-    methodKind: "unary";
-    input: typeof GetUserStatsRequestSchema;
-    output: typeof UserStatsResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_userstats_v1_user_stats_service, 0);
-
+    methodKind: 'unary'
+    input: typeof GetUserStatsRequestSchema
+    output: typeof UserStatsResponseSchema
+  }
+}> = /*@__PURE__*/ serviceDesc(file_userstats_v1_user_stats_service, 0)

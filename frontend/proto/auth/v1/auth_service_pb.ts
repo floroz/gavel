@@ -2,279 +2,300 @@
 // @generated from file auth/v1/auth_service.proto (package auth.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
-import type { Timestamp } from "@bufbuild/protobuf/wkt";
-import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
-import type { Message } from "@bufbuild/protobuf";
+import type {
+  GenFile,
+  GenMessage,
+  GenService,
+} from '@bufbuild/protobuf/codegenv2'
+import {
+  fileDesc,
+  messageDesc,
+  serviceDesc,
+} from '@bufbuild/protobuf/codegenv2'
+import type { Timestamp } from '@bufbuild/protobuf/wkt'
+import { file_google_protobuf_timestamp } from '@bufbuild/protobuf/wkt'
+import type { Message } from '@bufbuild/protobuf'
 
 /**
  * Describes the file auth/v1/auth_service.proto.
  */
-export const file_auth_v1_auth_service: GenFile = /*@__PURE__*/
-  fileDesc("ChphdXRoL3YxL2F1dGhfc2VydmljZS5wcm90bxIHYXV0aC52MSJxCg9SZWdpc3RlclJlcXVlc3QSDQoFZW1haWwYASABKAkSEAoIcGFzc3dvcmQYAiABKAkSEQoJZnVsbF9uYW1lGAMgASgJEhQKDGNvdW50cnlfY29kZRgEIAEoCRIUCgxwaG9uZV9udW1iZXIYBSABKAkiIwoQUmVnaXN0ZXJSZXNwb25zZRIPCgd1c2VyX2lkGAEgASgJIlcKDExvZ2luUmVxdWVzdBINCgVlbWFpbBgBIAEoCRIQCghwYXNzd29yZBgCIAEoCRISCgppcF9hZGRyZXNzGAMgASgJEhIKCnVzZXJfYWdlbnQYBCABKAkibAoNTG9naW5SZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSFQoNcmVmcmVzaF90b2tlbhgCIAEoCRIuCgpleHBpcmVzX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJPCg5SZWZyZXNoUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJEhIKCmlwX2FkZHJlc3MYAiABKAkSEgoKdXNlcl9hZ2VudBgDIAEoCSJuCg9SZWZyZXNoUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSLgoKZXhwaXJlc19hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiJgoNTG9nb3V0UmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIhAKDkxvZ291dFJlc3BvbnNlIiQKEUdldFByb2ZpbGVSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkinAEKEkdldFByb2ZpbGVSZXNwb25zZRIKCgJpZBgBIAEoCRINCgVlbWFpbBgCIAEoCRIRCglmdWxsX25hbWUYAyABKAkSEgoKYXZhdGFyX3VybBgEIAEoCRIUCgxjb3VudHJ5X2NvZGUYBSABKAkSLgoKY3JlYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAyxgIKC0F1dGhTZXJ2aWNlEj8KCFJlZ2lzdGVyEhguYXV0aC52MS5SZWdpc3RlclJlcXVlc3QaGS5hdXRoLnYxLlJlZ2lzdGVyUmVzcG9uc2USNgoFTG9naW4SFS5hdXRoLnYxLkxvZ2luUmVxdWVzdBoWLmF1dGgudjEuTG9naW5SZXNwb25zZRI8CgdSZWZyZXNoEhcuYXV0aC52MS5SZWZyZXNoUmVxdWVzdBoYLmF1dGgudjEuUmVmcmVzaFJlc3BvbnNlEjkKBkxvZ291dBIWLmF1dGgudjEuTG9nb3V0UmVxdWVzdBoXLmF1dGgudjEuTG9nb3V0UmVzcG9uc2USRQoKR2V0UHJvZmlsZRIaLmF1dGgudjEuR2V0UHJvZmlsZVJlcXVlc3QaGy5hdXRoLnYxLkdldFByb2ZpbGVSZXNwb25zZUIyWjBnaXRodWIuY29tL2Zsb3Jvei9nYXZlbC9wa2cvcHJvdG8vYXV0aC92MTthdXRodjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+export const file_auth_v1_auth_service: GenFile =
+  /*@__PURE__*/
+  fileDesc(
+    'ChphdXRoL3YxL2F1dGhfc2VydmljZS5wcm90bxIHYXV0aC52MSJxCg9SZWdpc3RlclJlcXVlc3QSDQoFZW1haWwYASABKAkSEAoIcGFzc3dvcmQYAiABKAkSEQoJZnVsbF9uYW1lGAMgASgJEhQKDGNvdW50cnlfY29kZRgEIAEoCRIUCgxwaG9uZV9udW1iZXIYBSABKAkiIwoQUmVnaXN0ZXJSZXNwb25zZRIPCgd1c2VyX2lkGAEgASgJIlcKDExvZ2luUmVxdWVzdBINCgVlbWFpbBgBIAEoCRIQCghwYXNzd29yZBgCIAEoCRISCgppcF9hZGRyZXNzGAMgASgJEhIKCnVzZXJfYWdlbnQYBCABKAkibAoNTG9naW5SZXNwb25zZRIUCgxhY2Nlc3NfdG9rZW4YASABKAkSFQoNcmVmcmVzaF90b2tlbhgCIAEoCRIuCgpleHBpcmVzX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJPCg5SZWZyZXNoUmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJEhIKCmlwX2FkZHJlc3MYAiABKAkSEgoKdXNlcl9hZ2VudBgDIAEoCSJuCg9SZWZyZXNoUmVzcG9uc2USFAoMYWNjZXNzX3Rva2VuGAEgASgJEhUKDXJlZnJlc2hfdG9rZW4YAiABKAkSLgoKZXhwaXJlc19hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiJgoNTG9nb3V0UmVxdWVzdBIVCg1yZWZyZXNoX3Rva2VuGAEgASgJIhAKDkxvZ291dFJlc3BvbnNlIiQKEUdldFByb2ZpbGVSZXF1ZXN0Eg8KB3VzZXJfaWQYASABKAkinAEKEkdldFByb2ZpbGVSZXNwb25zZRIKCgJpZBgBIAEoCRINCgVlbWFpbBgCIAEoCRIRCglmdWxsX25hbWUYAyABKAkSEgoKYXZhdGFyX3VybBgEIAEoCRIUCgxjb3VudHJ5X2NvZGUYBSABKAkSLgoKY3JlYXRlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAyxgIKC0F1dGhTZXJ2aWNlEj8KCFJlZ2lzdGVyEhguYXV0aC52MS5SZWdpc3RlclJlcXVlc3QaGS5hdXRoLnYxLlJlZ2lzdGVyUmVzcG9uc2USNgoFTG9naW4SFS5hdXRoLnYxLkxvZ2luUmVxdWVzdBoWLmF1dGgudjEuTG9naW5SZXNwb25zZRI8CgdSZWZyZXNoEhcuYXV0aC52MS5SZWZyZXNoUmVxdWVzdBoYLmF1dGgudjEuUmVmcmVzaFJlc3BvbnNlEjkKBkxvZ291dBIWLmF1dGgudjEuTG9nb3V0UmVxdWVzdBoXLmF1dGgudjEuTG9nb3V0UmVzcG9uc2USRQoKR2V0UHJvZmlsZRIaLmF1dGgudjEuR2V0UHJvZmlsZVJlcXVlc3QaGy5hdXRoLnYxLkdldFByb2ZpbGVSZXNwb25zZUIyWjBnaXRodWIuY29tL2Zsb3Jvei9nYXZlbC9wa2cvcHJvdG8vYXV0aC92MTthdXRodjFiBnByb3RvMw',
+    [file_google_protobuf_timestamp],
+  )
 
 /**
  * @generated from message auth.v1.RegisterRequest
  */
-export type RegisterRequest = Message<"auth.v1.RegisterRequest"> & {
+export type RegisterRequest = Message<'auth.v1.RegisterRequest'> & {
   /**
    * @generated from field: string email = 1;
    */
-  email: string;
+  email: string
 
   /**
    * @generated from field: string password = 2;
    */
-  password: string;
+  password: string
 
   /**
    * @generated from field: string full_name = 3;
    */
-  fullName: string;
+  fullName: string
 
   /**
    * ISO 3166-1 alpha-2
    *
    * @generated from field: string country_code = 4;
    */
-  countryCode: string;
+  countryCode: string
 
   /**
    * @generated from field: string phone_number = 5;
    */
-  phoneNumber: string;
-};
+  phoneNumber: string
+}
 
 /**
  * Describes the message auth.v1.RegisterRequest.
  * Use `create(RegisterRequestSchema)` to create a new message.
  */
-export const RegisterRequestSchema: GenMessage<RegisterRequest> = /*@__PURE__*/
-  messageDesc(file_auth_v1_auth_service, 0);
+export const RegisterRequestSchema: GenMessage<RegisterRequest> =
+  /*@__PURE__*/
+  messageDesc(file_auth_v1_auth_service, 0)
 
 /**
  * @generated from message auth.v1.RegisterResponse
  */
-export type RegisterResponse = Message<"auth.v1.RegisterResponse"> & {
+export type RegisterResponse = Message<'auth.v1.RegisterResponse'> & {
   /**
    * @generated from field: string user_id = 1;
    */
-  userId: string;
-};
+  userId: string
+}
 
 /**
  * Describes the message auth.v1.RegisterResponse.
  * Use `create(RegisterResponseSchema)` to create a new message.
  */
-export const RegisterResponseSchema: GenMessage<RegisterResponse> = /*@__PURE__*/
-  messageDesc(file_auth_v1_auth_service, 1);
+export const RegisterResponseSchema: GenMessage<RegisterResponse> =
+  /*@__PURE__*/
+  messageDesc(file_auth_v1_auth_service, 1)
 
 /**
  * @generated from message auth.v1.LoginRequest
  */
-export type LoginRequest = Message<"auth.v1.LoginRequest"> & {
+export type LoginRequest = Message<'auth.v1.LoginRequest'> & {
   /**
    * @generated from field: string email = 1;
    */
-  email: string;
+  email: string
 
   /**
    * @generated from field: string password = 2;
    */
-  password: string;
+  password: string
 
   /**
    * @generated from field: string ip_address = 3;
    */
-  ipAddress: string;
+  ipAddress: string
 
   /**
    * @generated from field: string user_agent = 4;
    */
-  userAgent: string;
-};
+  userAgent: string
+}
 
 /**
  * Describes the message auth.v1.LoginRequest.
  * Use `create(LoginRequestSchema)` to create a new message.
  */
-export const LoginRequestSchema: GenMessage<LoginRequest> = /*@__PURE__*/
-  messageDesc(file_auth_v1_auth_service, 2);
+export const LoginRequestSchema: GenMessage<LoginRequest> =
+  /*@__PURE__*/
+  messageDesc(file_auth_v1_auth_service, 2)
 
 /**
  * @generated from message auth.v1.LoginResponse
  */
-export type LoginResponse = Message<"auth.v1.LoginResponse"> & {
+export type LoginResponse = Message<'auth.v1.LoginResponse'> & {
   /**
    * @generated from field: string access_token = 1;
    */
-  accessToken: string;
+  accessToken: string
 
   /**
    * @generated from field: string refresh_token = 2;
    */
-  refreshToken: string;
+  refreshToken: string
 
   /**
    * For access token
    *
    * @generated from field: google.protobuf.Timestamp expires_at = 3;
    */
-  expiresAt?: Timestamp;
-};
+  expiresAt?: Timestamp
+}
 
 /**
  * Describes the message auth.v1.LoginResponse.
  * Use `create(LoginResponseSchema)` to create a new message.
  */
-export const LoginResponseSchema: GenMessage<LoginResponse> = /*@__PURE__*/
-  messageDesc(file_auth_v1_auth_service, 3);
+export const LoginResponseSchema: GenMessage<LoginResponse> =
+  /*@__PURE__*/
+  messageDesc(file_auth_v1_auth_service, 3)
 
 /**
  * @generated from message auth.v1.RefreshRequest
  */
-export type RefreshRequest = Message<"auth.v1.RefreshRequest"> & {
+export type RefreshRequest = Message<'auth.v1.RefreshRequest'> & {
   /**
    * @generated from field: string refresh_token = 1;
    */
-  refreshToken: string;
+  refreshToken: string
 
   /**
    * @generated from field: string ip_address = 2;
    */
-  ipAddress: string;
+  ipAddress: string
 
   /**
    * @generated from field: string user_agent = 3;
    */
-  userAgent: string;
-};
+  userAgent: string
+}
 
 /**
  * Describes the message auth.v1.RefreshRequest.
  * Use `create(RefreshRequestSchema)` to create a new message.
  */
-export const RefreshRequestSchema: GenMessage<RefreshRequest> = /*@__PURE__*/
-  messageDesc(file_auth_v1_auth_service, 4);
+export const RefreshRequestSchema: GenMessage<RefreshRequest> =
+  /*@__PURE__*/
+  messageDesc(file_auth_v1_auth_service, 4)
 
 /**
  * @generated from message auth.v1.RefreshResponse
  */
-export type RefreshResponse = Message<"auth.v1.RefreshResponse"> & {
+export type RefreshResponse = Message<'auth.v1.RefreshResponse'> & {
   /**
    * @generated from field: string access_token = 1;
    */
-  accessToken: string;
+  accessToken: string
 
   /**
    * @generated from field: string refresh_token = 2;
    */
-  refreshToken: string;
+  refreshToken: string
 
   /**
    * @generated from field: google.protobuf.Timestamp expires_at = 3;
    */
-  expiresAt?: Timestamp;
-};
+  expiresAt?: Timestamp
+}
 
 /**
  * Describes the message auth.v1.RefreshResponse.
  * Use `create(RefreshResponseSchema)` to create a new message.
  */
-export const RefreshResponseSchema: GenMessage<RefreshResponse> = /*@__PURE__*/
-  messageDesc(file_auth_v1_auth_service, 5);
+export const RefreshResponseSchema: GenMessage<RefreshResponse> =
+  /*@__PURE__*/
+  messageDesc(file_auth_v1_auth_service, 5)
 
 /**
  * @generated from message auth.v1.LogoutRequest
  */
-export type LogoutRequest = Message<"auth.v1.LogoutRequest"> & {
+export type LogoutRequest = Message<'auth.v1.LogoutRequest'> & {
   /**
    * @generated from field: string refresh_token = 1;
    */
-  refreshToken: string;
-};
+  refreshToken: string
+}
 
 /**
  * Describes the message auth.v1.LogoutRequest.
  * Use `create(LogoutRequestSchema)` to create a new message.
  */
-export const LogoutRequestSchema: GenMessage<LogoutRequest> = /*@__PURE__*/
-  messageDesc(file_auth_v1_auth_service, 6);
+export const LogoutRequestSchema: GenMessage<LogoutRequest> =
+  /*@__PURE__*/
+  messageDesc(file_auth_v1_auth_service, 6)
 
 /**
  * @generated from message auth.v1.LogoutResponse
  */
-export type LogoutResponse = Message<"auth.v1.LogoutResponse"> & {
-};
+export type LogoutResponse = Message<'auth.v1.LogoutResponse'> & {}
 
 /**
  * Describes the message auth.v1.LogoutResponse.
  * Use `create(LogoutResponseSchema)` to create a new message.
  */
-export const LogoutResponseSchema: GenMessage<LogoutResponse> = /*@__PURE__*/
-  messageDesc(file_auth_v1_auth_service, 7);
+export const LogoutResponseSchema: GenMessage<LogoutResponse> =
+  /*@__PURE__*/
+  messageDesc(file_auth_v1_auth_service, 7)
 
 /**
  * @generated from message auth.v1.GetProfileRequest
  */
-export type GetProfileRequest = Message<"auth.v1.GetProfileRequest"> & {
+export type GetProfileRequest = Message<'auth.v1.GetProfileRequest'> & {
   /**
    * Optional: If empty, uses the ID from the Access Token claims
    *
    * @generated from field: string user_id = 1;
    */
-  userId: string;
-};
+  userId: string
+}
 
 /**
  * Describes the message auth.v1.GetProfileRequest.
  * Use `create(GetProfileRequestSchema)` to create a new message.
  */
-export const GetProfileRequestSchema: GenMessage<GetProfileRequest> = /*@__PURE__*/
-  messageDesc(file_auth_v1_auth_service, 8);
+export const GetProfileRequestSchema: GenMessage<GetProfileRequest> =
+  /*@__PURE__*/
+  messageDesc(file_auth_v1_auth_service, 8)
 
 /**
  * @generated from message auth.v1.GetProfileResponse
  */
-export type GetProfileResponse = Message<"auth.v1.GetProfileResponse"> & {
+export type GetProfileResponse = Message<'auth.v1.GetProfileResponse'> & {
   /**
    * @generated from field: string id = 1;
    */
-  id: string;
+  id: string
 
   /**
    * @generated from field: string email = 2;
    */
-  email: string;
+  email: string
 
   /**
    * @generated from field: string full_name = 3;
    */
-  fullName: string;
+  fullName: string
 
   /**
    * @generated from field: string avatar_url = 4;
    */
-  avatarUrl: string;
+  avatarUrl: string
 
   /**
    * @generated from field: string country_code = 5;
    */
-  countryCode: string;
+  countryCode: string
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 6;
    */
-  createdAt?: Timestamp;
-};
+  createdAt?: Timestamp
+}
 
 /**
  * Describes the message auth.v1.GetProfileResponse.
  * Use `create(GetProfileResponseSchema)` to create a new message.
  */
-export const GetProfileResponseSchema: GenMessage<GetProfileResponse> = /*@__PURE__*/
-  messageDesc(file_auth_v1_auth_service, 9);
+export const GetProfileResponseSchema: GenMessage<GetProfileResponse> =
+  /*@__PURE__*/
+  messageDesc(file_auth_v1_auth_service, 9)
 
 /**
  * @generated from service auth.v1.AuthService
@@ -286,40 +307,40 @@ export const AuthService: GenService<{
    * @generated from rpc auth.v1.AuthService.Register
    */
   register: {
-    methodKind: "unary";
-    input: typeof RegisterRequestSchema;
-    output: typeof RegisterResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof RegisterRequestSchema
+    output: typeof RegisterResponseSchema
+  }
   /**
    * Login authenticates a user and returns access/refresh tokens.
    *
    * @generated from rpc auth.v1.AuthService.Login
    */
   login: {
-    methodKind: "unary";
-    input: typeof LoginRequestSchema;
-    output: typeof LoginResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof LoginRequestSchema
+    output: typeof LoginResponseSchema
+  }
   /**
    * Refresh rotates the refresh token and issues a new access token.
    *
    * @generated from rpc auth.v1.AuthService.Refresh
    */
   refresh: {
-    methodKind: "unary";
-    input: typeof RefreshRequestSchema;
-    output: typeof RefreshResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof RefreshRequestSchema
+    output: typeof RefreshResponseSchema
+  }
   /**
    * Logout revokes the given refresh token.
    *
    * @generated from rpc auth.v1.AuthService.Logout
    */
   logout: {
-    methodKind: "unary";
-    input: typeof LogoutRequestSchema;
-    output: typeof LogoutResponseSchema;
-  },
+    methodKind: 'unary'
+    input: typeof LogoutRequestSchema
+    output: typeof LogoutResponseSchema
+  }
   /**
    * GetProfile returns the full user details.
    * If user_id is empty, it returns the profile of the authenticated user ("Me").
@@ -327,10 +348,8 @@ export const AuthService: GenService<{
    * @generated from rpc auth.v1.AuthService.GetProfile
    */
   getProfile: {
-    methodKind: "unary";
-    input: typeof GetProfileRequestSchema;
-    output: typeof GetProfileResponseSchema;
-  },
-}> = /*@__PURE__*/
-  serviceDesc(file_auth_v1_auth_service, 0);
-
+    methodKind: 'unary'
+    input: typeof GetProfileRequestSchema
+    output: typeof GetProfileResponseSchema
+  }
+}> = /*@__PURE__*/ serviceDesc(file_auth_v1_auth_service, 0)

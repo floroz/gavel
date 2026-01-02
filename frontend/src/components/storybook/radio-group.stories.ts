@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react-vite'
 import { fn } from 'storybook/test'
 
 import { RadioGroup } from './radio-group'
+import type { Meta, StoryObj } from '@storybook/react-vite'
 
 const meta = {
   title: 'Form/RadioGroup',
