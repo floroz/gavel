@@ -1,0 +1,22 @@
+image:
+  repository: frontend-v2
+  tag: latest
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  className: nginx
+  host: app.gavel.local
+
+config:
+  authServiceUrl: "http://auth-service"
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+replicaCount: 1
