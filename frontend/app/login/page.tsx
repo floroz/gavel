@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useTransition } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,8 +26,27 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { loginInputSchema, type LoginInput } from "@/shared/api/auth";
+import { loginAction } from "@/actions/auth";
+
+/**
+ * Validate redirect URL to prevent open redirect attacks
+ * Only allows relative paths starting with /
+ */
+function isValidRedirect(url: string): boolean {
+  return url.startsWith("/") && !url.startsWith("//");
+}
 
 export default function LoginPage() {
+  const [isPending, startTransition] = useTransition();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const redirectParam = searchParams.get("redirect");
+  const redirectTo =
+    redirectParam && isValidRedirect(redirectParam)
+      ? redirectParam
+      : "/dashboard";
+
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginInputSchema),
     defaultValues: {
@@ -35,13 +56,15 @@ export default function LoginPage() {
   });
 
   async function onSubmit(data: LoginInput) {
-    try {
-      // Placeholder for Server Action
-      console.log("Login data:", data);
-      toast.success("Welcome back! (Placeholder)");
-    } catch (error) {
-      toast.error("Login failed");
-    }
+    startTransition(async () => {
+      const result = await loginAction(data);
+
+      if (result.success) {
+        router.push(redirectTo);
+      } else {
+        toast.error(result.error);
+      }
+    });
   }
 
   return (
@@ -82,8 +105,8 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
-                Sign In
+              <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending ? "Signing in..." : "Sign In"}
               </Button>
             </form>
           </Form>

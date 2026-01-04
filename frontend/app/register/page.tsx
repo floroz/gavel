@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,8 +26,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { registerInputSchema, type RegisterInput } from "@/shared/api/auth";
+import { registerAction } from "@/actions/auth";
 
 export default function RegisterPage() {
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerInputSchema),
     defaultValues: {
@@ -38,17 +44,15 @@ export default function RegisterPage() {
   });
 
   async function onSubmit(data: RegisterInput) {
-    try {
-      // Placeholder for Server Action
-      console.log("Register data:", data);
-      toast.success("Registration successful! (Placeholder)");
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
+    startTransition(async () => {
+      const result = await registerAction(data);
+
+      if (result.success) {
+        router.push("/dashboard");
       } else {
-        toast.error("Registration failed");
+        toast.error(result.error);
       }
-    }
+    });
   }
 
   return (
@@ -141,8 +145,8 @@ export default function RegisterPage() {
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full">
-                Register
+              <Button type="submit" className="w-full" disabled={isPending}>
+                {isPending ? "Creating account..." : "Register"}
               </Button>
             </form>
           </Form>
