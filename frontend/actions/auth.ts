@@ -1,13 +1,15 @@
 /**
  * Auth Server Actions
  *
+ * Server actions handle data mutations only.
+ * UI behavior (redirects, toasts) is handled by the calling component.
+ *
  * All actions set/clear HttpOnly cookies and never expose tokens to the browser.
  */
 
 "use server";
 
 import { headers, cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { ConnectError } from "@connectrpc/connect";
 import { authClient } from "@/lib/rpc";
 import { setAuthCookies, clearAuthCookies } from "@/lib/cookies";
@@ -20,21 +22,11 @@ import {
 import { type ActionResult } from "@/shared/types";
 
 /**
- * Validate redirect URL to prevent open redirect attacks
- * Only allows relative paths starting with /
- */
-function isValidRedirect(url: string): boolean {
-  return url.startsWith("/") && !url.startsWith("//");
-}
-
-/**
  * Login Action
- * Called from the login form
+ * Authenticates user and sets HttpOnly cookies
+ * Returns success/failure - caller handles redirect
  */
-export async function loginAction(
-  input: LoginInput,
-  redirectTo: string = "/dashboard",
-): Promise<ActionResult<{ userId: string }>> {
+export async function loginAction(input: LoginInput): Promise<ActionResult> {
   // Validate input
   const parsed = loginInputSchema.safeParse(input);
 
@@ -61,6 +53,8 @@ export async function loginAction(
 
     // Set HttpOnly cookies (tokens never returned to browser)
     await setAuthCookies(response.accessToken, response.refreshToken);
+
+    return { success: true };
   } catch (error) {
     // gRPC errors are thrown by ConnectRPC
     if (error instanceof ConnectError) {
@@ -76,19 +70,16 @@ export async function loginAction(
       error: "Login failed. Please try again.",
     };
   }
-
-  // Validate and redirect to the intended destination
-  const safeRedirect = isValidRedirect(redirectTo) ? redirectTo : "/dashboard";
-  redirect(safeRedirect);
 }
 
 /**
  * Register Action
- * Called from the registration form
+ * Registers user, auto-logs in, and sets HttpOnly cookies
+ * Returns success/failure - caller handles redirect
  */
 export async function registerAction(
   input: RegisterInput,
-): Promise<ActionResult<{ userId: string }>> {
+): Promise<ActionResult> {
   // Validate input
   const parsed = registerInputSchema.safeParse(input);
 
@@ -124,6 +115,8 @@ export async function registerAction(
 
     // Set HttpOnly cookies
     await setAuthCookies(loginResponse.accessToken, loginResponse.refreshToken);
+
+    return { success: true };
   } catch (error) {
     if (error instanceof ConnectError) {
       return {
@@ -137,14 +130,12 @@ export async function registerAction(
       error: "Registration failed. Email may already be in use.",
     };
   }
-
-  // Redirect to dashboard (must be outside try/catch)
-  redirect("/dashboard");
 }
 
 /**
  * Logout Action
  * Revokes refresh token on backend and clears cookies
+ * Returns success/failure - caller handles redirect
  */
 export async function logoutAction(): Promise<ActionResult> {
   try {
@@ -164,6 +155,8 @@ export async function logoutAction(): Promise<ActionResult> {
 
     // Clear cookies
     await clearAuthCookies();
+
+    return { success: true };
   } catch {
     // TODO: log to observability tool
     return {
@@ -171,7 +164,4 @@ export async function logoutAction(): Promise<ActionResult> {
       error: "Logout failed",
     };
   }
-
-  // Redirect to home (must be outside try/catch)
-  redirect("/");
 }
