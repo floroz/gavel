@@ -49,7 +49,7 @@ func setupAuthApp(t *testing.T, pool *pgxpool.Pool) (authv1connect.AuthServiceCl
 		Bytes: pubBytes,
 	})
 
-	signer, err := auth.NewSigner(privPEM, pubPEM)
+	signer, err := auth.NewSigner(privPEM, pubPEM, "gavel-auth-service")
 	require.NoError(t, err)
 
 	// 3. Initialize Service

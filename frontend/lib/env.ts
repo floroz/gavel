@@ -3,16 +3,17 @@
  *
  * This module uses @t3-oss/env-nextjs for type-safe environment variables with:
  * - Runtime validation with Zod schemas
- * - Sensible defaults for local development
  * - Type safety and autocomplete
+ * - No defaults in code - all values must be explicitly set
  *
- * Local Development Defaults:
- * - AUTH_SERVICE_URL: http://localhost:8080
- * - BID_SERVICE_URL: http://localhost:8081
- * - USER_STATS_SERVICE_URL: http://localhost:8082
+ * Environment Sources:
+ * - Local Development: Load from .env.local file (copy from .env.example)
+ * - Kubernetes: Injected via Helm chart values (deploy/charts/frontend/values.yaml)
  *
- * Production (K8s):
- * - Set via Helm chart environment variables
+ * Next.js automatically loads .env files in this order:
+ * 1. .env.local (highest priority, git-ignored)
+ * 2. .env.production / .env.development
+ * 3. .env
  */
 
 import { createEnv } from "@t3-oss/env-nextjs";
@@ -31,6 +32,7 @@ export const env = createEnv({
     BID_SERVICE_URL: z.url(),
     USER_STATS_SERVICE_URL: z.url(),
     JWT_PUBLIC_KEY_PATH: z.string(),
+    JWT_ISSUER: z.string(),
   },
 
   /**
@@ -49,6 +51,7 @@ export const env = createEnv({
     BID_SERVICE_URL: process.env.BID_SERVICE_URL,
     USER_STATS_SERVICE_URL: process.env.USER_STATS_SERVICE_URL,
     JWT_PUBLIC_KEY_PATH: process.env.JWT_PUBLIC_KEY_PATH,
+    JWT_ISSUER: process.env.JWT_ISSUER,
   },
 
   /**

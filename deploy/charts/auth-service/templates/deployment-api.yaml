@@ -33,10 +33,12 @@ spec:
               value: {{ .Values.config.authDbUrl | quote }}
             - name: RABBITMQ_URL
               value: {{ .Values.config.rabbitmqUrl | quote }}
-            - name: AUTH_PRIVATE_KEY_PATH
-              value: "/app/keys/private.pem"
-            - name: AUTH_PUBLIC_KEY_PATH
-              value: "/app/keys/public.pem"
+            - name: JWT_PRIVATE_KEY_PATH
+              value: {{ .Values.config.jwtPrivateKeyPath | quote }}
+            - name: JWT_PUBLIC_KEY_PATH
+              value: {{ .Values.config.jwtPublicKeyPath | quote }}
+            - name: JWT_ISSUER
+              value: {{ .Values.config.jwtIssuer }}
           volumeMounts:
             - name: keys
               mountPath: "/app/keys"

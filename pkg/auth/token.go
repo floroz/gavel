@@ -58,10 +58,11 @@ type TokenPair struct {
 type Signer struct {
 	privateKey *rsa.PrivateKey
 	publicKey  *rsa.PublicKey
+	issuer     string
 }
 
 // NewSigner creates a Signer from PEM-encoded keys.
-func NewSigner(privateKeyPEM, publicKeyPEM []byte) (*Signer, error) {
+func NewSigner(privateKeyPEM, publicKeyPEM []byte, issuer string) (*Signer, error) {
 	block, _ := pem.Decode(privateKeyPEM)
 	if block == nil {
 		return nil, errors.New("failed to parse private key PEM")
@@ -87,6 +88,7 @@ func NewSigner(privateKeyPEM, publicKeyPEM []byte) (*Signer, error) {
 	return &Signer{
 		privateKey: priv,
 		publicKey:  rsaPub,
+		issuer:     issuer,
 	}, nil
 }
 
@@ -101,7 +103,7 @@ func (s *Signer) GenerateTokens(userID uuid.UUID, email, fullName string, permis
 			Email:       email,
 			FullName:    fullName,
 			Permissions: permissions,
-			Iss:         "gavel-auth-service",
+			Iss:         s.issuer,
 			Exp:         float64(accessExpiry.Unix()),
 			Iat:         float64(now.Unix()),
 		},

@@ -35,11 +35,11 @@ func main() {
 	ctx := context.Background()
 
 	// 1. Load Keys
-	privateKeyPath := os.Getenv("AUTH_PRIVATE_KEY_PATH")
-	publicKeyPath := os.Getenv("AUTH_PUBLIC_KEY_PATH")
+	privateKeyPath := os.Getenv("JWT_PRIVATE_KEY_PATH")
+	publicKeyPath := os.Getenv("JWT_PUBLIC_KEY_PATH")
 
 	if privateKeyPath == "" || publicKeyPath == "" {
-		logger.Error("AUTH_PRIVATE_KEY_PATH and AUTH_PUBLIC_KEY_PATH must be set")
+		logger.Error("JWT_PRIVATE_KEY_PATH and JWT_PUBLIC_KEY_PATH must be set")
 		os.Exit(1)
 	}
 
@@ -55,7 +55,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	signer, err := auth.NewSigner(privateKeyPEM, publicKeyPEM)
+	issuer := os.Getenv("JWT_ISSUER")
+	if issuer == "" {
+		logger.Error("JWT_ISSUER is not set")
+		os.Exit(1)
+	}
+
+	signer, err := auth.NewSigner(privateKeyPEM, publicKeyPEM, issuer)
 	if err != nil {
 		logger.Error("Failed to create signer", "error", err)
 		os.Exit(1)

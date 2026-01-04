@@ -6,7 +6,9 @@ image:
 config:
   authDbUrl: "postgres://user:password@postgres-auth-postgresql:5432/auth_db?sslmode=disable"
   rabbitmqUrl: "amqp://user:password@rabbitmq:5672/"
-
+  jwtIssuer: "{{ .Release.Name }}"
+  jwtPrivateKeyPath: "/app/keys/private.pem"
+  jwtPublicKeyPath: "/app/keys/public.pem"
 resources:
   requests:
     memory: "64Mi"
