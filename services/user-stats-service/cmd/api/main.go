@@ -7,11 +7,13 @@ import (
 	"os"
 	"time"
 
+	"connectrpc.com/connect"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
+	"github.com/floroz/gavel/pkg/auth"
 	pkgdb "github.com/floroz/gavel/pkg/database"
 	"github.com/floroz/gavel/pkg/proto/userstats/v1/userstatsv1connect"
 	"github.com/floroz/gavel/services/user-stats-service/internal/adapters/api"
@@ -30,7 +32,34 @@ func main() {
 
 	ctx := context.Background()
 
-	// 1. Initialize Postgres Connection Pool
+	// 1. Load JWT Public Key for token validation
+	publicKeyPath := os.Getenv("JWT_PUBLIC_KEY_PATH")
+	if publicKeyPath == "" {
+		logger.Error("JWT_PUBLIC_KEY_PATH is not set")
+		os.Exit(1)
+	}
+
+	publicKeyPEM, err := os.ReadFile(publicKeyPath)
+	if err != nil {
+		logger.Error("Failed to read public key", "path", publicKeyPath, "error", err)
+		os.Exit(1)
+	}
+
+	issuer := os.Getenv("JWT_ISSUER")
+	if issuer == "" {
+		logger.Error("JWT_ISSUER is not set")
+		os.Exit(1)
+	}
+
+	// Create signer with only public key (for validation only)
+	signer, err := auth.NewSignerFromPublicKey(publicKeyPEM, issuer)
+	if err != nil {
+		logger.Error("Failed to create signer", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("JWT public key loaded", "path", publicKeyPath)
+
+	// 2. Initialize Postgres Connection Pool
 	dbURL := os.Getenv("USER_STATS_DB_URL")
 	if dbURL == "" {
 		logger.Error("USER_STATS_DB_URL is not set")
@@ -59,9 +88,13 @@ func main() {
 	statsRepo := database.NewUserStatsRepository(pool)
 	statsService := userstats.NewService(statsRepo, txManager)
 
-	// 3. Initialize API Handler
+	// 4. Initialize API Handler with auth interceptor
 	statsHandler := api.NewUserStatsServiceHandler(statsService)
-	path, handler := userstatsv1connect.NewUserStatsServiceHandler(statsHandler)
+	authInterceptor := auth.NewAuthInterceptor(signer)
+	path, handler := userstatsv1connect.NewUserStatsServiceHandler(
+		statsHandler,
+		connect.WithInterceptors(authInterceptor),
+	)
 
 	mux := http.NewServeMux()
 	mux.Handle(path, handler)

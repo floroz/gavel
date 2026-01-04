@@ -59,3 +59,13 @@ func GetUserID(ctx context.Context) (string, bool) {
 	id, ok := ctx.Value(UserIDKey).(string)
 	return id, ok
 }
+
+// MustGetUserID retrieves the user ID from the context.
+// Panics if the user ID is not present - use only in handlers protected by auth interceptor.
+func MustGetUserID(ctx context.Context) string {
+	id, ok := ctx.Value(UserIDKey).(string)
+	if !ok || id == "" {
+		panic("MustGetUserID called without auth interceptor - user_id not in context")
+	}
+	return id
+}

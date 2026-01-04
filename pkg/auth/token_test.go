@@ -43,7 +43,7 @@ func generateTestKeys(t *testing.T) ([]byte, []byte) {
 
 func TestTokenLifecycle(t *testing.T) {
 	privPEM, pubPEM := generateTestKeys(t)
-	signer, err := NewSigner(privPEM, pubPEM)
+	signer, err := NewSigner(privPEM, pubPEM, "test-issuer")
 	if err != nil {
 		t.Fatalf("NewSigner failed: %v", err)
 	}
@@ -76,7 +76,7 @@ func TestTokenLifecycle(t *testing.T) {
 
 func TestSecurityScenarios(t *testing.T) {
 	privPEM, pubPEM := generateTestKeys(t)
-	signer, _ := NewSigner(privPEM, pubPEM)
+	signer, _ := NewSigner(privPEM, pubPEM, "test-issuer")
 
 	// Valid claims for reuse
 	validClaims := &Claims{
@@ -161,7 +161,7 @@ func TestNewSignerValidation(t *testing.T) {
 	_, pubPEM := generateTestKeys(t)
 
 	t.Run("Fails on invalid private key", func(t *testing.T) {
-		_, err := NewSigner([]byte("not-a-pem"), pubPEM)
+		_, err := NewSigner([]byte("not-a-pem"), pubPEM, "test-issuer")
 		if err == nil {
 			t.Error("Should fail on invalid private key")
 		}

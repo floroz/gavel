@@ -62,7 +62,7 @@ type Signer struct {
 	issuer     string
 }
 
-// NewSigner creates a Signer from PEM-encoded keys.
+// NewSigner creates a Signer from PEM-encoded keys (for auth-service that signs tokens).
 func NewSigner(privateKeyPEM, publicKeyPEM []byte, issuer string) (*Signer, error) {
 	block, _ := pem.Decode(privateKeyPEM)
 	if block == nil {
@@ -88,6 +88,29 @@ func NewSigner(privateKeyPEM, publicKeyPEM []byte, issuer string) (*Signer, erro
 
 	return &Signer{
 		privateKey: priv,
+		publicKey:  rsaPub,
+		issuer:     issuer,
+	}, nil
+}
+
+// NewSignerFromPublicKey creates a Signer with only the public key (for services that only validate tokens).
+// This signer cannot generate tokens, only validate them.
+func NewSignerFromPublicKey(publicKeyPEM []byte, issuer string) (*Signer, error) {
+	blockPub, _ := pem.Decode(publicKeyPEM)
+	if blockPub == nil {
+		return nil, errors.New("failed to parse public key PEM")
+	}
+	pub, err := x509.ParsePKIXPublicKey(blockPub.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse public key: %w", err)
+	}
+	rsaPub, ok := pub.(*rsa.PublicKey)
+	if !ok {
+		return nil, errors.New("public key is not RSA")
+	}
+
+	return &Signer{
+		privateKey: nil, // No private key - cannot sign tokens
 		publicKey:  rsaPub,
 		issuer:     issuer,
 	}, nil

@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"connectrpc.com/connect"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/rabbitmq/amqp091-go"
@@ -14,6 +15,7 @@ import (
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
+	"github.com/floroz/gavel/pkg/auth"
 	pkgdb "github.com/floroz/gavel/pkg/database"
 	pkgevents "github.com/floroz/gavel/pkg/events"
 	"github.com/floroz/gavel/pkg/proto/bids/v1/bidsv1connect"
@@ -33,7 +35,34 @@ func main() {
 
 	ctx := context.Background()
 
-	// 1. Initialize Postgres Connection Pool
+	// 1. Load JWT Public Key for token validation
+	publicKeyPath := os.Getenv("JWT_PUBLIC_KEY_PATH")
+	if publicKeyPath == "" {
+		logger.Error("JWT_PUBLIC_KEY_PATH is not set")
+		os.Exit(1)
+	}
+
+	publicKeyPEM, err := os.ReadFile(publicKeyPath)
+	if err != nil {
+		logger.Error("Failed to read public key", "path", publicKeyPath, "error", err)
+		os.Exit(1)
+	}
+
+	issuer := os.Getenv("JWT_ISSUER")
+	if issuer == "" {
+		logger.Error("JWT_ISSUER is not set")
+		os.Exit(1)
+	}
+
+	// Create signer with only public key (for validation only)
+	signer, err := auth.NewSignerFromPublicKey(publicKeyPEM, issuer)
+	if err != nil {
+		logger.Error("Failed to create signer", "error", err)
+		os.Exit(1)
+	}
+	logger.Info("JWT public key loaded", "path", publicKeyPath)
+
+	// 2. Initialize Postgres Connection Pool
 	dbURL := os.Getenv("BID_DB_URL")
 
 	if dbURL == "" {
@@ -102,9 +131,13 @@ func main() {
 	// 5. Initialize Service (Domain Layer)
 	auctionService := bids.NewAuctionService(txManager, bidRepo, itemRepo, outboxRepo)
 
-	// 6. Initialize API Handler (ConnectRPC)
+	// 7. Initialize API Handler (ConnectRPC) with auth interceptor
 	bidHandler := api.NewBidServiceHandler(auctionService)
-	path, handler := bidsv1connect.NewBidServiceHandler(bidHandler)
+	authInterceptor := auth.NewAuthInterceptor(signer)
+	path, handler := bidsv1connect.NewBidServiceHandler(
+		bidHandler,
+		connect.WithInterceptors(authInterceptor),
+	)
 
 	// 7. Start Outbox Relay
 	outboxRelay := pkgevents.NewOutboxRelay(

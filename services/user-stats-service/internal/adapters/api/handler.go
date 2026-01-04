@@ -8,6 +8,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
+	"github.com/floroz/gavel/pkg/auth"
 	userstatsv1 "github.com/floroz/gavel/pkg/proto/userstats/v1"
 	"github.com/floroz/gavel/pkg/proto/userstats/v1/userstatsv1connect"
 	"github.com/floroz/gavel/services/user-stats-service/internal/domain/userstats"
@@ -28,9 +29,10 @@ func (h *UserStatsServiceHandler) GetUserStats(
 	ctx context.Context,
 	req *connect.Request[userstatsv1.GetUserStatsRequest],
 ) (*connect.Response[userstatsv1.UserStatsResponse], error) {
-	userID, err := uuid.Parse(req.Msg.UserId)
+	// Get user ID from context (guaranteed by auth interceptor at router level)
+	userID, err := uuid.Parse(auth.MustGetUserID(ctx))
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid user_id"))
+		return nil, connect.NewError(connect.CodeInternal, errors.New("invalid user_id in token"))
 	}
 
 	stats, err := h.service.GetUserStats(ctx, userID)

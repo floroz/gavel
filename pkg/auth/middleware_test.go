@@ -10,7 +10,7 @@ import (
 
 func TestAuthMiddleware(t *testing.T) {
 	privPEM, pubPEM := generateTestKeys(t) // Reusing helper from token_test.go
-	signer, _ := NewSigner(privPEM, pubPEM)
+	signer, _ := NewSigner(privPEM, pubPEM, "test-issuer")
 
 	// Generate a valid token
 	userID := uuid.New()

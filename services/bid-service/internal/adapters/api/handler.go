@@ -8,6 +8,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
+	"github.com/floroz/gavel/pkg/auth"
 	bidsv1 "github.com/floroz/gavel/pkg/proto/bids/v1"
 	"github.com/floroz/gavel/pkg/proto/bids/v1/bidsv1connect"
 	"github.com/floroz/gavel/services/bid-service/internal/domain/bids"
@@ -28,15 +29,16 @@ func (h *BidServiceHandler) PlaceBid(
 	ctx context.Context,
 	req *connect.Request[bidsv1.PlaceBidRequest],
 ) (*connect.Response[bidsv1.PlaceBidResponse], error) {
-	// 1. Validation / Mapping
+	// 1. Get user ID from context (guaranteed by auth interceptor at router level)
+	userID, err := uuid.Parse(auth.MustGetUserID(ctx))
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, errors.New("invalid user_id in token"))
+	}
+
+	// 2. Validation / Mapping
 	itemID, err := uuid.Parse(req.Msg.ItemId)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid item_id"))
-	}
-
-	userID, err := uuid.Parse(req.Msg.UserId)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid user_id"))
 	}
 
 	cmd := bids.PlaceBidCommand{
@@ -45,7 +47,7 @@ func (h *BidServiceHandler) PlaceBid(
 		Amount: req.Msg.Amount,
 	}
 
-	// 2. Execution
+	// 3. Execution
 	bid, err := h.auctionService.PlaceBid(ctx, cmd)
 	if err != nil {
 		if errors.Is(err, bids.ErrBidTooLow) || errors.Is(err, bids.ErrAuctionEnded) {
@@ -65,7 +67,7 @@ func (h *BidServiceHandler) PlaceBid(
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
-	// 3. Response Mapping
+	// 4. Response Mapping
 	res := &bidsv1.PlaceBidResponse{
 		Bid: &bidsv1.Bid{
 			Id:        bid.ID.String(),
