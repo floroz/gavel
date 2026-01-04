@@ -44,6 +44,7 @@
   },
   "devDependencies": {
     "@bufbuild/protoc-gen-es": "^2.10.2",
+    "@next/env": "^16.1.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -192,6 +192,14 @@ The frontend application is deployed to the cluster and accessible via Ingress.
 
 *(Optional)* For UI-only development with faster hot-reload, you can run `pnpm dev` locally in the `frontend/` directory (listening on localhost:3000), but `app.gavel.local` serves the full SSR experience from the cluster.
 
+#### Frontend Setup
+To run the frontend locally or execute tests, you must create the environment configuration files:
+```bash
+cd frontend
+cp .env.example .env.local
+cp .env.example .env.test
+```
+
 ### 4. Verify Deployment
 Run the verification script to check service health:
 ```bash
