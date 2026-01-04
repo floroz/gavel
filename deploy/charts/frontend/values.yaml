@@ -8,8 +8,12 @@ ingress:
   className: nginx
   host: app.gavel.local
 
+# BFF Configuration
+# Frontend (BFF) connects to backend services using internal K8s Service DNS
 config:
   authServiceUrl: "http://auth-service"
+  bidServiceUrl: "http://bid-service"
+  userStatsServiceUrl: "http://user-stats-service"
 
 resources:
   requests:

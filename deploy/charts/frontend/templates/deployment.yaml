@@ -23,8 +23,13 @@ spec:
           env:
             - name: NODE_ENV
               value: "production"
+            # BFF Backend Service URLs (internal K8s Service DNS)
             - name: AUTH_SERVICE_URL
               value: {{ .Values.config.authServiceUrl | quote }}
+            - name: BID_SERVICE_URL
+              value: {{ .Values.config.bidServiceUrl | quote }}
+            - name: USER_STATS_SERVICE_URL
+              value: {{ .Values.config.userStatsServiceUrl | quote }}
           readinessProbe:
             httpGet:
               path: /
