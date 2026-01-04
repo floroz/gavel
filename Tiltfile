@@ -223,7 +223,7 @@ k8s_yaml(frontend_v2_yaml)
 
 k8s_resource('frontend',
   labels=['frontend'],
-  resource_deps=['nginx-ingress']
+  resource_deps=['nginx-ingress', 'create_auth_keys_secret']
 )
 
 # =============================================================================

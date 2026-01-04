@@ -30,6 +30,12 @@ spec:
               value: {{ .Values.config.bidServiceUrl | quote }}
             - name: USER_STATS_SERVICE_URL
               value: {{ .Values.config.userStatsServiceUrl | quote }}
+            - name: JWT_PUBLIC_KEY_PATH
+              value: /etc/secrets/jwt-keys/public.pem
+          volumeMounts:
+            - name: jwt-keys
+              mountPath: /etc/secrets/jwt-keys
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /
@@ -48,3 +54,10 @@ spec:
             failureThreshold: 3
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: jwt-keys
+          secret:
+            secretName: auth-keys
+            items:
+              - key: public.pem
+                path: public.pem
