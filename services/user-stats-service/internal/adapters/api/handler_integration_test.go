@@ -2,6 +2,10 @@ package api_test
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,6 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/floroz/gavel/pkg/auth"
 	"github.com/floroz/gavel/pkg/database"
 	userstatsv1 "github.com/floroz/gavel/pkg/proto/userstats/v1"
 	"github.com/floroz/gavel/pkg/proto/userstats/v1/userstatsv1connect"
@@ -22,15 +27,59 @@ import (
 	"github.com/floroz/gavel/services/user-stats-service/internal/domain/userstats"
 )
 
+// testAuthConfig holds the auth configuration for tests
+type testAuthConfig struct {
+	signer *auth.Signer
+}
+
+// generateTestKeys creates RSA key pairs for testing
+func generateTestKeys(t *testing.T) ([]byte, []byte) {
+	t.Helper()
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Failed to generate RSA key")
+
+	privBytes := x509.MarshalPKCS1PrivateKey(privateKey)
+	privPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: privBytes,
+	})
+
+	pubBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+	require.NoError(t, err, "Failed to marshal public key")
+	pubPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: pubBytes,
+	})
+
+	return privPEM, pubPEM
+}
+
+// generateTestToken creates a valid JWT token for the given userID
+func (c *testAuthConfig) generateTestToken(t *testing.T, userID uuid.UUID) string {
+	t.Helper()
+	pair, err := c.signer.GenerateTokens(userID, "test@example.com", "Test User", nil)
+	require.NoError(t, err, "Failed to generate test token")
+	return pair.AccessToken
+}
+
 // setupUserStatsService creates a handler with all dependencies for testing
-func setupUserStatsService(t *testing.T, pool *pgxpool.Pool) (userstatsv1connect.UserStatsServiceClient, http.Handler) {
+func setupUserStatsService(t *testing.T, pool *pgxpool.Pool) (userstatsv1connect.UserStatsServiceClient, http.Handler, *testAuthConfig) {
+	// Generate test keys and create signer
+	privPEM, pubPEM := generateTestKeys(t)
+	signer, err := auth.NewSigner(privPEM, pubPEM, "test-issuer")
+	require.NoError(t, err, "Failed to create signer")
+
 	txManager := database.NewPostgresTransactionManager(pool, 5*time.Second)
 	repo := infradb.NewUserStatsRepository(pool)
 	service := userstats.NewService(repo, txManager)
 	handler := api.NewUserStatsServiceHandler(service)
 
 	mux := http.NewServeMux()
-	path, h := userstatsv1connect.NewUserStatsServiceHandler(handler)
+	authInterceptor := auth.NewAuthInterceptor(signer)
+	path, h := userstatsv1connect.NewUserStatsServiceHandler(
+		handler,
+		connect.WithInterceptors(authInterceptor),
+	)
 	mux.Handle(path, h)
 
 	server := httptest.NewServer(mux)
@@ -41,7 +90,7 @@ func setupUserStatsService(t *testing.T, pool *pgxpool.Pool) (userstatsv1connect
 		server.URL,
 	)
 
-	return client, mux
+	return client, mux, &testAuthConfig{signer: signer}
 }
 
 // seedUserStats inserts test stats into the database
@@ -68,7 +117,7 @@ func TestUserStatsServiceHandler_GetUserStats_Integration(t *testing.T) {
 	testDB := testhelpers.NewTestDatabase(t, "../../../migrations")
 	defer testDB.Close()
 
-	client, _ := setupUserStatsService(t, testDB.Pool)
+	client, _, authConfig := setupUserStatsService(t, testDB.Pool)
 
 	t.Run("Success", func(t *testing.T) {
 		// Seed Stats
@@ -83,10 +132,9 @@ func TestUserStatsServiceHandler_GetUserStats_Integration(t *testing.T) {
 		}
 		seedUserStats(t, testDB.Pool, expectedStats)
 
-		// Make Request
-		req := connect.NewRequest(&userstatsv1.GetUserStatsRequest{
-			UserId: userID.String(),
-		})
+		// Make Request with auth header
+		req := connect.NewRequest(&userstatsv1.GetUserStatsRequest{})
+		req.Header().Set("Authorization", "Bearer "+authConfig.generateTestToken(t, userID))
 
 		res, err := client.GetUserStats(context.Background(), req)
 		require.NoError(t, err)
@@ -102,22 +150,22 @@ func TestUserStatsServiceHandler_GetUserStats_Integration(t *testing.T) {
 	})
 
 	t.Run("NotFound", func(t *testing.T) {
-		req := connect.NewRequest(&userstatsv1.GetUserStatsRequest{
-			UserId: uuid.New().String(),
-		})
+		// Request for a user that has no stats
+		userID := uuid.New()
+		req := connect.NewRequest(&userstatsv1.GetUserStatsRequest{})
+		req.Header().Set("Authorization", "Bearer "+authConfig.generateTestToken(t, userID))
 
 		_, err := client.GetUserStats(context.Background(), req)
 		require.Error(t, err)
 		assert.Equal(t, connect.CodeNotFound, connect.CodeOf(err))
 	})
 
-	t.Run("InvalidID", func(t *testing.T) {
-		req := connect.NewRequest(&userstatsv1.GetUserStatsRequest{
-			UserId: "invalid-uuid",
-		})
+	t.Run("Unauthenticated", func(t *testing.T) {
+		// Request without auth header
+		req := connect.NewRequest(&userstatsv1.GetUserStatsRequest{})
 
 		_, err := client.GetUserStats(context.Background(), req)
 		require.Error(t, err)
-		assert.Equal(t, connect.CodeInvalidArgument, connect.CodeOf(err))
+		assert.Equal(t, connect.CodeUnauthenticated, connect.CodeOf(err))
 	})
 }

@@ -22,7 +22,7 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 	defer testDB.Close()
 
 	// Setup Application
-	client, pool := setupBidApp(t, testDB.Pool)
+	client, pool, authConfig := setupBidApp(t, testDB.Pool)
 
 	t.Run("Success_ValidBid", func(t *testing.T) {
 		// Arrange
@@ -42,9 +42,9 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 		// Act
 		req := connect.NewRequest(&bidsv1.PlaceBidRequest{
 			ItemId: itemID.String(),
-			UserId: userID.String(),
 			Amount: 1500,
 		})
+		req.Header().Set("Authorization", "Bearer "+authConfig.generateTestToken(t, userID))
 		res, err := client.PlaceBid(context.Background(), req)
 
 		// Assert
@@ -61,9 +61,9 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 	t.Run("Failure_ItemNotFound", func(t *testing.T) {
 		req := connect.NewRequest(&bidsv1.PlaceBidRequest{
 			ItemId: uuid.New().String(),
-			UserId: uuid.New().String(),
 			Amount: 1500,
 		})
+		req.Header().Set("Authorization", "Bearer "+authConfig.generateTestToken(t, uuid.New()))
 
 		_, err := client.PlaceBid(context.Background(), req)
 		require.Error(t, err)
@@ -85,9 +85,9 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 
 		req := connect.NewRequest(&bidsv1.PlaceBidRequest{
 			ItemId: itemID.String(),
-			UserId: uuid.New().String(),
 			Amount: 4000,
 		})
+		req.Header().Set("Authorization", "Bearer "+authConfig.generateTestToken(t, uuid.New()))
 
 		_, err := client.PlaceBid(context.Background(), req)
 		require.Error(t, err)
@@ -109,9 +109,9 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 
 		req := connect.NewRequest(&bidsv1.PlaceBidRequest{
 			ItemId: itemID.String(),
-			UserId: uuid.New().String(),
 			Amount: 3000,
 		})
+		req.Header().Set("Authorization", "Bearer "+authConfig.generateTestToken(t, uuid.New()))
 
 		_, err := client.PlaceBid(context.Background(), req)
 		require.Error(t, err)
@@ -133,9 +133,9 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 
 		req := connect.NewRequest(&bidsv1.PlaceBidRequest{
 			ItemId: itemID.String(),
-			UserId: uuid.New().String(),
 			Amount: -100,
 		})
+		req.Header().Set("Authorization", "Bearer "+authConfig.generateTestToken(t, uuid.New()))
 		_, err := client.PlaceBid(context.Background(), req)
 		require.Error(t, err)
 		assert.Equal(t, connect.CodeInvalidArgument, connect.CodeOf(err))
@@ -156,9 +156,9 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 
 		req := connect.NewRequest(&bidsv1.PlaceBidRequest{
 			ItemId: itemID.String(),
-			UserId: uuid.New().String(),
 			Amount: 0,
 		})
+		req.Header().Set("Authorization", "Bearer "+authConfig.generateTestToken(t, uuid.New()))
 		_, err := client.PlaceBid(context.Background(), req)
 		require.Error(t, err)
 		assert.Equal(t, connect.CodeInvalidArgument, connect.CodeOf(err))
@@ -187,11 +187,12 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 			wg.Add(1)
 			go func(amount int64) {
 				defer wg.Done()
+				userID := uuid.New()
 				req := connect.NewRequest(&bidsv1.PlaceBidRequest{
 					ItemId: itemID.String(),
-					UserId: uuid.New().String(),
 					Amount: amount,
 				})
+				req.Header().Set("Authorization", "Bearer "+authConfig.generateTestToken(t, userID))
 				_, err := client.PlaceBid(context.Background(), req)
 				results <- err
 			}(int64(60000 + i*1000))
@@ -228,11 +229,12 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
+				userID := uuid.New()
 				req := connect.NewRequest(&bidsv1.PlaceBidRequest{
 					ItemId: itemID.String(),
-					UserId: uuid.New().String(),
 					Amount: 60000,
 				})
+				req.Header().Set("Authorization", "Bearer "+authConfig.generateTestToken(t, userID))
 				_, err := client.PlaceBid(context.Background(), req)
 				results <- err
 			}()
