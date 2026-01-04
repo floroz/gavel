@@ -13,9 +13,11 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { authClient } from "./rpc";
 import { setAuthCookies, getAuthCookies, clearAuthCookies } from "./cookies";
+import { verifyToken, type TokenClaims } from "./jwt";
 
 export interface Session {
   accessToken: string;
+  claims?: TokenClaims;
   userId?: string;
   email?: string;
 }
@@ -99,9 +101,20 @@ export async function getCurrentUser() {
     return null;
   }
 
-  // For now, we return minimal info
-  // Later, we can decode JWT claims or call a UserInfo endpoint
-  return {
-    accessToken: session.accessToken,
-  };
+  try {
+    // Decode JWT to get user information
+    const claims = await verifyToken(session.accessToken);
+
+    return {
+      userId: claims.sub,
+      email: claims.email,
+      fullName: claims.fullName,
+      role: claims.role,
+      permissions: claims.permissions || [],
+    };
+  } catch {
+    // If token verification fails, return null
+    // This can happen if the token is expired or invalid
+    return null;
+  }
 }
