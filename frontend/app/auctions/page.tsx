@@ -1,4 +1,4 @@
-export default function AuctionsPage() {
+export default async function AuctionsPage() {
   return (
     <div className="container py-8">
       <h1 className="text-3xl font-bold">Auctions</h1>
