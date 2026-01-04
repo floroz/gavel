@@ -27,9 +27,10 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "production", "test"])
       .default("development"),
-    AUTH_SERVICE_URL: z.string().url().default("http://localhost:8080"),
-    BID_SERVICE_URL: z.string().url().default("http://localhost:8081"),
-    USER_STATS_SERVICE_URL: z.string().url().default("http://localhost:8082"),
+    AUTH_SERVICE_URL: z.url(),
+    BID_SERVICE_URL: z.url(),
+    USER_STATS_SERVICE_URL: z.url(),
+    JWT_PUBLIC_KEY_PATH: z.string(),
   },
 
   /**
@@ -47,6 +48,7 @@ export const env = createEnv({
     AUTH_SERVICE_URL: process.env.AUTH_SERVICE_URL,
     BID_SERVICE_URL: process.env.BID_SERVICE_URL,
     USER_STATS_SERVICE_URL: process.env.USER_STATS_SERVICE_URL,
+    JWT_PUBLIC_KEY_PATH: process.env.JWT_PUBLIC_KEY_PATH,
   },
 
   /**
