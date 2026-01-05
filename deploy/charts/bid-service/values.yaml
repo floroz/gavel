@@ -7,6 +7,8 @@ config:
   bidDbUrl: "postgres://user:password@postgres-bids-postgresql:5432/bid_db?sslmode=disable"
   rabbitmqUrl: "amqp://user:password@rabbitmq:5672/"
   redisUrl: "redis-master:6379"
+  jwtIssuer: "auth-service"
+  jwtPublicKeyPath: "/app/keys/public.pem"
 
 resources:
   requests:

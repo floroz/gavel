@@ -6,6 +6,8 @@ image:
 config:
   userStatsDbUrl: "postgres://user:password@postgres-stats-postgresql:5432/stats_db?sslmode=disable"
   rabbitmqUrl: "amqp://user:password@rabbitmq:5672/"
+  jwtIssuer: "auth-service"
+  jwtPublicKeyPath: "/app/keys/public.pem"
 
 resources:
   requests:

@@ -38,6 +38,14 @@ spec:
               value: {{ .Values.config.rabbitmqUrl | quote }}
             - name: REDIS_URL
               value: {{ .Values.config.redisUrl | quote }}
+            - name: JWT_PUBLIC_KEY_PATH
+              value: {{ .Values.config.jwtPublicKeyPath | quote }}
+            - name: JWT_ISSUER
+              value: {{ .Values.config.jwtIssuer | quote }}
+          volumeMounts:
+            - name: keys
+              mountPath: "/app/keys"
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /health
@@ -56,4 +64,8 @@ spec:
             failureThreshold: 3
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: keys
+          secret:
+            secretName: auth-keys
 

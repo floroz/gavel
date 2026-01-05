@@ -172,7 +172,7 @@ k8s_resource('bid-service-migrate',
 )
 k8s_resource('bid-service-api', 
   labels=['app'], 
-  resource_deps=['postgres-bids', 'rabbitmq', 'redis', 'bid-service-migrate']
+  resource_deps=['postgres-bids', 'rabbitmq', 'redis', 'bid-service-migrate', 'create_auth_keys_secret']
 )
 k8s_resource('bid-service-worker', 
   labels=['app'], 
@@ -200,7 +200,7 @@ k8s_resource('user-stats-service-migrate',
 )
 k8s_resource('user-stats-service-api', 
   labels=['app'], 
-  resource_deps=['postgres-stats', 'rabbitmq', 'user-stats-service-migrate']
+  resource_deps=['postgres-stats', 'rabbitmq', 'user-stats-service-migrate', 'create_auth_keys_secret']
 )
 k8s_resource('user-stats-service-worker', 
   labels=['app'], 
