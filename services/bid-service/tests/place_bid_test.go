@@ -36,6 +36,10 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 			EndAt:             time.Now().Add(1 * time.Hour),
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
+			Images:            []string{},
+			Category:          "test",
+			SellerID:          uuid.New(),
+			Status:            items.ItemStatusActive,
 		}
 		seedTestItem(t, pool, testItem)
 
@@ -80,6 +84,10 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 			EndAt:             time.Now().Add(1 * time.Hour),
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
+			Images:            []string{},
+			Category:          "test",
+			SellerID:          uuid.New(),
+			Status:            items.ItemStatusActive,
 		}
 		seedTestItem(t, pool, testItem)
 
@@ -104,6 +112,10 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 			EndAt:             time.Now().Add(-1 * time.Hour),
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
+			Images:            []string{},
+			Category:          "test",
+			SellerID:          uuid.New(),
+			Status:            items.ItemStatusActive,
 		}
 		seedTestItem(t, pool, testItem)
 
@@ -128,6 +140,10 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 			EndAt:             time.Now().Add(1 * time.Hour),
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
+			Images:            []string{},
+			Category:          "test",
+			SellerID:          uuid.New(),
+			Status:            items.ItemStatusActive,
 		}
 		seedTestItem(t, pool, testItem)
 
@@ -151,6 +167,10 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 			EndAt:             time.Now().Add(1 * time.Hour),
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
+			Images:            []string{},
+			Category:          "test",
+			SellerID:          uuid.New(),
+			Status:            items.ItemStatusActive,
 		}
 		seedTestItem(t, pool, testItem)
 
@@ -175,6 +195,10 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 			EndAt:             time.Now().Add(24 * time.Hour),
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
+			Images:            []string{},
+			Category:          "test",
+			SellerID:          uuid.New(),
+			Status:            items.ItemStatusActive,
 		}
 		seedTestItem(t, pool, testItem)
 
@@ -219,6 +243,10 @@ func TestPlaceBid_Scenarios(t *testing.T) {
 			EndAt:             time.Now().Add(24 * time.Hour),
 			CreatedAt:         time.Now(),
 			UpdatedAt:         time.Now(),
+			Images:            []string{},
+			Category:          "test",
+			SellerID:          uuid.New(),
+			Status:            items.ItemStatusActive,
 		}
 		seedTestItem(t, pool, testItem)
 

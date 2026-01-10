@@ -25,6 +25,7 @@ var (
 	ErrBidTooLow        = fmt.Errorf("bid amount must be higher than current highest bid")
 	ErrAuctionEnded     = fmt.Errorf("auction has ended")
 	ErrInvalidBidAmount = fmt.Errorf("bid amount must be positive")
+	ErrSellerCannotBid  = fmt.Errorf("seller cannot bid on their own item")
 )
 
 // validateBidAmount checks if the bid amount is higher than the current highest bid
@@ -86,6 +87,11 @@ func (s *AuctionService) PlaceBid(ctx context.Context, cmd PlaceBidCommand) (*Bi
 	item, err := s.itemRepo.GetItemByIDForUpdate(ctx, tx, cmd.ItemID)
 	if err != nil {
 		return nil, fmt.Errorf("item not found: %w", err)
+	}
+
+	// Validate seller cannot bid on own item
+	if item.SellerID == cmd.UserID {
+		return nil, ErrSellerCannotBid
 	}
 
 	if valErr := validateBidAmount(cmd.Amount, item.CurrentHighestBid); valErr != nil {

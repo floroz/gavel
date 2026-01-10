@@ -68,10 +68,19 @@ func setupBidApp(t *testing.T, pool *pgxpool.Pool) (bidsv1connect.BidServiceClie
 
 	// 3. Initialize Service (Domain Layer)
 	auctionService := bids.NewAuctionService(txManager, bidRepo, itemRepo, outboxRepo)
+	itemService := items.NewService(itemRepo)
 
 	// 4. Initialize API Handler with auth interceptor (ConnectRPC)
-	bidHandler := api.NewBidServiceHandler(auctionService)
-	authInterceptor := auth.NewAuthInterceptor(signer)
+	bidHandler := api.NewBidServiceHandler(auctionService, itemService, bidRepo)
+
+	// Configure public routes (no auth required)
+	publicRoutes := map[string]bool{
+		"/bids.v1.BidService/GetItem":     true,
+		"/bids.v1.BidService/ListItems":   true,
+		"/bids.v1.BidService/GetItemBids": true,
+	}
+
+	authInterceptor := auth.NewAuthInterceptorWithPublicRoutes(signer, publicRoutes)
 	path, handler := bidsv1connect.NewBidServiceHandler(
 		bidHandler,
 		connect.WithInterceptors(authInterceptor),
@@ -105,8 +114,8 @@ func seedTestItem(t *testing.T, pool *pgxpool.Pool, item *items.Item) {
 	t.Helper()
 	ctx := context.Background()
 	query := `
-		INSERT INTO items (id, title, description, start_price, current_highest_bid, end_at, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO items (id, title, description, start_price, current_highest_bid, end_at, created_at, updated_at, images, category, seller_id, status)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 	`
 	_, err := pool.Exec(ctx, query,
 		item.ID,
@@ -117,6 +126,10 @@ func seedTestItem(t *testing.T, pool *pgxpool.Pool, item *items.Item) {
 		item.EndAt,
 		item.CreatedAt,
 		item.UpdatedAt,
+		item.Images,
+		item.Category,
+		item.SellerID,
+		item.Status,
 	)
 	require.NoError(t, err, "Failed to seed test item")
 }

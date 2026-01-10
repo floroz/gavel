@@ -22,6 +22,7 @@ import (
 	"github.com/floroz/gavel/services/bid-service/internal/adapters/api"
 	"github.com/floroz/gavel/services/bid-service/internal/adapters/database"
 	"github.com/floroz/gavel/services/bid-service/internal/domain/bids"
+	"github.com/floroz/gavel/services/bid-service/internal/domain/items"
 )
 
 func main() {
@@ -130,10 +131,19 @@ func main() {
 
 	// 5. Initialize Service (Domain Layer)
 	auctionService := bids.NewAuctionService(txManager, bidRepo, itemRepo, outboxRepo)
+	itemService := items.NewService(itemRepo)
 
 	// 7. Initialize API Handler (ConnectRPC) with auth interceptor
-	bidHandler := api.NewBidServiceHandler(auctionService)
-	authInterceptor := auth.NewAuthInterceptor(signer)
+	bidHandler := api.NewBidServiceHandler(auctionService, itemService, bidRepo)
+
+	// Configure public routes (no auth required)
+	publicRoutes := map[string]bool{
+		"/bids.v1.BidService/GetItem":     true,
+		"/bids.v1.BidService/ListItems":   true,
+		"/bids.v1.BidService/GetItemBids": true,
+	}
+
+	authInterceptor := auth.NewAuthInterceptorWithPublicRoutes(signer, publicRoutes)
 	path, handler := bidsv1connect.NewBidServiceHandler(
 		bidHandler,
 		connect.WithInterceptors(authInterceptor),
