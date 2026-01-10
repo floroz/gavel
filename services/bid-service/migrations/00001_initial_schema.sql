@@ -1,4 +1,6 @@
 -- +goose Up
+CREATE TYPE item_status AS ENUM ('active', 'ended', 'cancelled');
+
 CREATE TABLE items (
     id UUID PRIMARY KEY,
     title TEXT NOT NULL,
@@ -7,8 +9,16 @@ CREATE TABLE items (
     current_highest_bid BIGINT DEFAULT 0 CHECK (current_highest_bid >= 0),
     end_at TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    images TEXT[] DEFAULT '{}',
+    category TEXT,
+    seller_id UUID NOT NULL,
+    status item_status NOT NULL DEFAULT 'active'
 );
+
+CREATE INDEX idx_items_seller_id ON items(seller_id);
+CREATE INDEX idx_items_status ON items(status);
+CREATE INDEX idx_items_status_end_at ON items(status, end_at) WHERE status = 'active';
 
 CREATE TABLE bids (
     id UUID PRIMARY KEY,
@@ -21,4 +31,5 @@ CREATE TABLE bids (
 -- +goose Down
 DROP TABLE IF EXISTS bids;
 DROP TABLE IF EXISTS items;
+DROP TYPE IF EXISTS item_status;
 
