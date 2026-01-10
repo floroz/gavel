@@ -33,6 +33,7 @@ export const env = createEnv({
     USER_STATS_SERVICE_URL: z.url(),
     JWT_PUBLIC_KEY_PATH: z.string(),
     JWT_ISSUER: z.string(),
+    SECURE_COOKIE: z.string(),
   },
 
   /**
@@ -52,6 +53,7 @@ export const env = createEnv({
     USER_STATS_SERVICE_URL: process.env.USER_STATS_SERVICE_URL,
     JWT_PUBLIC_KEY_PATH: process.env.JWT_PUBLIC_KEY_PATH,
     JWT_ISSUER: process.env.JWT_ISSUER,
+    SECURE_COOKIE: process.env.SECURE_COOKIE,
   },
 
   /**

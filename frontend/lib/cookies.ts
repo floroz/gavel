@@ -12,11 +12,11 @@
  */
 
 import { cookies } from "next/headers";
-import { isProduction } from "./env";
+import { env } from "./env";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: isProduction,
+  secure: env.SECURE_COOKIE !== "false",
   sameSite: "strict" as const,
   path: "/",
 } as const;
