@@ -9,11 +9,18 @@
  * - `requireAuth()`: Get session or redirect to login (protected routes)
  */
 
-import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { authClient } from "./rpc";
 import { setAuthCookies, getAuthCookies, clearAuthCookies } from "./cookies";
 import { verifyToken, type TokenClaims } from "./jwt";
+
+export interface CurrentUser {
+  userId: string;
+  email: string;
+  fullName: string;
+  role: string;
+  permissions: string[];
+}
 
 export interface Session {
   accessToken: string;
@@ -96,7 +103,7 @@ export async function getCurrentUser() {
       fullName: claims.fullName,
       role: claims.role,
       permissions: claims.permissions || [],
-    };
+    } satisfies CurrentUser;
   } catch {
     // If token verification fails, return null
     // This can happen if the token is expired or invalid
